@@ -13,7 +13,7 @@ from django.contrib.auth.models import AbstractBaseUser, UserManager, \
 from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
-    generic_bulk_cached_fetch, cache_set, flush_stream, \
+    message_cache_key, generic_bulk_cached_fetch, cache_set, flush_stream, \
     display_recipient_cache_key, cache_delete, \
     get_stream_cache_key, active_user_dicts_in_realm_cache_key, \
     active_bot_dicts_in_realm_cache_key, active_user_dict_fields, \
@@ -1138,6 +1138,14 @@ def get_context_for_message(message):
         pub_date__gt=message.pub_date - timedelta(minutes=15),
     ).order_by('-id')[:10]
 
+def flush_message(sender, **kwargs):
+    # type: (Any, **Any) -> None
+    message = kwargs['instance']
+    cache_delete(message_cache_key(message.id))
+    cache_delete(to_dict_cache_key(message, False))
+    cache_delete(to_dict_cache_key(message, True))
+
+post_save.connect(flush_message, sender=Message)
 
 # Whenever a message is sent, for each user current subscribed to the
 # corresponding Recipient object, we add a row to the UserMessage
