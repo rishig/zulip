@@ -282,10 +282,15 @@ casper.waitForSelector('.message_table', function () {
 });
 
 // make sure we get the right error message, and that the message hasn't actually changed
-casper.waitForSelector("div.edit_error", function () {
-    casper.test.assertSelectorHasText('div.edit_error', 'Error saving edit: Your organization has turned off message editing.');
+// casper.waitForSelector("div.edit_error", function () {
+//     casper.test.assertSelectorHasText('div.edit_error', 'Error saving edit: Your organization has turned off message editing.');
+//     casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
+// });
+
+casper.waitForText('Error saving edit: Your organization has turned off message editing.', function () {
     casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
 });
+
 
 // Check that edit link no longer appears in the popover menu
 // TODO: also check that the edit icon no longer appears next to the message
