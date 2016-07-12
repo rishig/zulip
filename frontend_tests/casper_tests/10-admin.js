@@ -281,12 +281,10 @@ casper.waitForSelector('.message_table', function () {
     });
 });
 
-// make sure we get the right error message, and that the message hasn't actually changed
-// casper.waitForSelector("div.edit_error", function () {
-//     casper.test.assertSelectorHasText('div.edit_error', 'Error saving edit: Your organization has turned off message editing.');
-//     casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
-// });
+casper.then(function () { casper.capture('z.png'); });
 
+// xxx
+// make sure we get the right error message, and that the message hasn't actually changed
 casper.waitForText('Error saving edit: Your organization has turned off message editing.', function () {
     casper.test.assertSelectorHasText(".last_message .message_content", "test edited");
 });
@@ -337,7 +335,9 @@ casper.waitForSelector('.message_table', function () {
 
 // check that edit went through
 casper.waitWhileVisible("textarea.message_edit_content", function () {
+    casper.capture('x.png');
     casper.test.assertSelectorHasText(".last_message .message_content", "test RE-edited");
+    casper.capture('y.png');
 });
 
 // check that the edit link reappears in popover menu
