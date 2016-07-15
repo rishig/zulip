@@ -11,11 +11,27 @@ Zulip supports several different authentications methods:
 * Likely more coming (e.g. there's work on [GitHub auth](https://github.com/zulip/zulip/issues/1042)).
 
 The setup documentation for most of these is simple enough that we've
-included it inline in `/etc/zulip/settings.py`, right above to the
+included it inline in `/etc/zulip/settings.py`, right above the
 settings used to configure them.  The remote user authentication
 backend is more complex since it requires interfacing with a generic
 third-party authentication system, and so we've documented it in
-detail here.
+detail here. We've also included instructions for setting up a
+third-party email service, since that's probably the simplest way to
+test that your installation is working.
+
+## Email Authentication via a third party service
+
+The example below uses [mailgun.com](http://mailgun.com), since they offer
+10000 free emails a month, but something similar should work for most
+providers.
+
+(1) Go to [mailgun.com](http://mailgun.com), and make an account. No need to
+enter in payment details.
+
+(2) Click "Or Continue To Your Control Panel".
+
+(3)
+
 
 ## Remote User SSO Authentication
 
