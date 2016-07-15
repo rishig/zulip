@@ -53,8 +53,12 @@ SSO_APPEND_DOMAIN = None # type: str
 # Configure the outgoing SMTP server below. For testing, you can skip
 # sending emails entirely by commenting out EMAIL_HOST, but you will
 # want to configure this to support email address confirmation emails,
-# missed message emails, onboarding follow-up emails, etc. To
-# configure SMTP, you will need to complete the following steps:
+# missed message emails, onboarding follow-up emails, etc. There are
+# also freemium services that provide authenticated mail delivery and
+# take only a minute to set up; instructions for doing so are at
+# http://zulip.readthedocs.io/en/latest/prod-authentication-methods.html.
+#
+# To configure SMTP, you will need to complete the following steps:
 #
 # (1) Fill out the outgoing email sending configuration below.
 #
