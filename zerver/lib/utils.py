@@ -11,6 +11,7 @@ import os
 from time import sleep
 
 from django.conf import settings
+from django.http import HttpRequest
 from six.moves import range
 from zerver.lib.str_utils import force_text
 
@@ -125,3 +126,21 @@ def mkdir_p(path):
             pass
         else:
             raise
+
+def get_subdomain(request):
+    # type: (HttpRequest) -> text_type
+    domain = request.get_host()
+    index = domain.find("." + settings.EXTERNAL_HOST)
+    if index == -1:
+        return ""
+    else:
+        return domain[0:index]
+
+def check_subdomain(realm_subdomain, user_subdomain):
+    # type: (text_type, text_type) -> bool
+    if settings.REALMS_HAVE_SUBDOMAINS and realm_subdomain is not None:
+        if (realm_subdomain == "" and user_subdomain is None):
+            return True
+        if realm_subdomain != user_subdomain:
+            return False
+    return True
