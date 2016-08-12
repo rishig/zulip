@@ -191,6 +191,12 @@ class Realm(ModelReprMixin, models.Model):
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
 
+    def realm_uri(self):
+        if settings.REALMS_HAVE_SUBDOMAINS:
+            return '%s%s.%s' % (settings.EXTERNAL_URI_SCHEME,
+                                self.subdomain, settings.EXTERNAL_HOST)
+        return '%s%s' % (settings.EXTERNAL_URI_SCHEME, settings.EXTERNAL_HOST)
+
     @property
     def is_zephyr_mirror_realm(self):
         # type: () -> bool

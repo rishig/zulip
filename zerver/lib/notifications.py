@@ -43,7 +43,7 @@ def one_click_unsubscribe_link(user_profile, endpoint):
     Zulip e-mails without having to first log in.
     """
     token = unsubscribe_token(user_profile)
-    base_url = "https://" + settings.EXTERNAL_HOST
+    base_url = user_profile.realm.realm_uri()
     resource_path = "accounts/unsubscribe/%s/%s" % (endpoint, token)
     return "%s/%s" % (base_url.rstrip("/"), resource_path)
 
