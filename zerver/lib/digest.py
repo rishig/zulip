@@ -169,7 +169,8 @@ def handle_digest_email(user_profile_id, cutoff):
     # Start building email template data.
     template_payload = {
         'name': user_profile.full_name,
-        'external_host': settings.EXTERNAL_HOST,
+        'external_host': settings.EXTERNAL_HOST, # unused?
+        'realm_uri': user_profile.realm.realm_uri(),
         'unsubscribe_link': one_click_unsubscribe_link(user_profile, "digest")
         } # type: Dict[str, Any]
 

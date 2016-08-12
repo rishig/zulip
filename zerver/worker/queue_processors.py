@@ -157,7 +157,8 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                                              {'activate_url': link,
                                               'referrer': referrer,
                                               'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
-                                              'external_host': settings.EXTERNAL_HOST,
+                                              'realm_uri': referrer.realm.realm_uri(), # currently unused
+                                              'server_uri': '%s%s' % (settings.EXTERNAL_URI_SCHEME, settings.EXTERNAL_HOST),
                                               'support_email': settings.ZULIP_ADMINISTRATOR},
                                              datetime.timedelta(days=2),
                                              tags=["invitation-reminders"],

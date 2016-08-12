@@ -1257,7 +1257,8 @@ def process_unsubscribe(token, subscription_type, unsubscribe_function):
     unsubscribe_function(user_profile)
     return render_to_response('zerver/unsubscribe_success.html',
                               {"subscription_type": subscription_type,
-                               "external_host": settings.EXTERNAL_HOST})
+                               "external_host": settings.EXTERNAL_HOST, # unused?
+                               "realm_uri": user_profile.realm.realm_uri()})
 
 # Email unsubscribe functions. All have the function signature
 # processor(user_profile).

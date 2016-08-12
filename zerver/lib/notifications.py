@@ -58,17 +58,17 @@ def hashchange_encode(string):
 def pm_narrow_url(participants):
     # type: (List[text_type]) -> text_type
     participants.sort()
-    base_url = u"https://%s/#narrow/pm-with/" % (settings.EXTERNAL_HOST,)
+    base_url = u"%s%s/#narrow/pm-with/" % (settings.EXTERNAL_URI_SCHEME, settings.EXTERNAL_HOST)
     return base_url + hashchange_encode(",".join(participants))
 
 def stream_narrow_url(stream):
     # type: (text_type) -> text_type
-    base_url = u"https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
+    base_url = u"%s%s/#narrow/stream/" % (settings.EXTERNAL_URI_SCHEME, settings.EXTERNAL_HOST)
     return base_url + hashchange_encode(stream)
 
 def topic_narrow_url(stream, topic):
     # type: (text_type, text_type) -> text_type
-    base_url = u"https://%s/#narrow/stream/" % (settings.EXTERNAL_HOST,)
+    base_url = u"%s%s/#narrow/stream/" % (settings.EXTERNAL_URI_SCHEME, settings.EXTERNAL_HOST)
     return u"%s%s/topic/%s" % (base_url, hashchange_encode(stream),
                               hashchange_encode(topic))
 
@@ -249,7 +249,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile, missed_messages, m
         'name': user_profile.full_name,
         'messages': build_message_list(user_profile, missed_messages),
         'message_count': message_count,
-        'url': 'https://%s' % (settings.EXTERNAL_HOST,),
+        'url': '%s%s' % (settings.EXTERNAL_URI_SCHEME, settings.EXTERNAL_HOST),
         'reply_warning': False,
         'external_host': settings.EXTERNAL_HOST,
         'mention': missed_messages[0].recipient.type == Recipient.STREAM,
@@ -468,9 +468,11 @@ def enqueue_welcome_emails(email, name):
     user_profile = get_user_profile_by_email(email)
     unsubscribe_link = one_click_unsubscribe_link(user_profile, "welcome")
 
-    template_payload = {'name': name,
+    template_payload = {'name': name, # unused?
+                        'realm_uri': user_profile.realm.realm_uri(),
+                        'server_uri': '%s%s' % (settings.EXTERNAL_URI_SCHEME, settings.EXTERNAL_HOST),
                         'verbose_support_offers': settings.VERBOSE_SUPPORT_OFFERS,
-                        'external_host': settings.EXTERNAL_HOST,
+                        'external_host': settings.EXTERNAL_HOST, # unused?
                         'unsubscribe_link': unsubscribe_link}
 
     # Send day 1 email
