@@ -3016,10 +3016,15 @@ def do_send_confirmation_email(invitee, referrer):
         subject_template_path = 'confirmation/mituser_invite_email_subject.txt'
         body_template_path = 'confirmation/mituser_invite_email_body.txt'
 
+    if settings.REALMS_HAVE_SUBDOMAINS:
+        host = '%s.%s' % (referrer.realm.subdomain, settings.EXTERNAL_HOST)
+    else:
+        host = settings.EXTERNAL_HOST
+
     Confirmation.objects.send_confirmation(
         invitee, invitee.email, additional_context=context,
         subject_template_path=subject_template_path,
-        body_template_path=body_template_path)
+        body_template_path=body_template_path, host=host)
 
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id, missed_message):
