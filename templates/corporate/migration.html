@@ -1,0 +1,56 @@
+{% extends "zerver/portico.html" %}
+
+{# Migration Instructions. #}
+
+{% block portico_content %}
+
+    <div class="portico-page-header"><a href="#">Migration Instructions</a></div>
+
+<!-- h1 style="margin-top:30px;">Migration Instructions</h1 -->
+
+<div style="max-width: 800px">
+
+<p> Here is a checklist of the things that you may need to do, now that the migration is complete.</p>
+
+<ul>
+  <li> The domain of your Zulip server will be <a href="{{ realm_uri }}">{{ realm_uri }}</a>.
+    Update your bookmarks! </li>
+
+<li> You will need to logout and re-login to the Zulip desktop and mobile
+  apps.  The latest versions of the Zulip apps have an option on the login
+    page where you can specify which Zulip server to use.  You should enter
+    <a href="{{ realm_uri }}">{{ realm_uri }}</a>. </li>
+
+<li> If you are using the Zulip Email Gateway integration (i.e. sending
+  messages into Zulip by sending emails to <code>@streams.zulip.com</code> email
+  addresses), the email addresses have changed to reflect the new domain.
+    You will be able to obtain the new email addresses by visiting
+    <a href="{{ realm_uri }}/#subscriptions">{{ realm_uri }}/#subscriptions</a>
+    ("Manage Streams" in the gear menu). </li>
+
+<li> All of your bots and integrations will need to be migrated to
+    connect to the new Zulip servers' API endpoints and to use new API keys.
+    You can see the bots you manage and obtain the new API keys by visiting
+      <a href="{{ realm_uri }}/#settings">{{ realm_uri }}/#settings</a>
+      ("Settings" in the gear menu).  For each
+    integration, you will need to update its configuration to:
+<ul>
+  <li> Replace <code>https://api.zulip.com/v1/</code> with <code>{{ realm_uri }}/api/v1</code>
+          as the "Zulip server URL". </li>
+
+  <li> Replace the API key with the new API key from
+      <a href="{{ realm_uri }}/#settings">{{ realm_uri }}/#settings</a>.
+  </ul>
+</li>
+</ul>
+
+<p> You will likely want to refer to
+  <a href="{{ realm_uri }}/integrations">{{ realm_uri }}/integrations</a>
+  to see how your bots are configured.  Your Zulip organization's
+  administration can see a list of all the bots that have been configured
+  for your organization at
+      <a href="{{ realm_uri }}/#administration">{{ realm_uri }}/#administration</a>,
+      and should use that list to make sure you migrate them all. </p>
+</div>
+
+{% endblock %}

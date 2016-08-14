@@ -10,6 +10,9 @@ i18n_urlpatterns = [
     # Terms of service and privacy policy
     url(r'^terms-enterprise/$',  TemplateView.as_view(template_name='corporate/terms-enterprise.html')),
     url(r'^privacy/$', TemplateView.as_view(template_name='corporate/privacy.html')),
+
+    # zulipchat.com migration
+    url(r'^migration/$', TemplateView.as_view(template_name='corporate/migration.html')),
 ]
 
 urlpatterns = patterns('', *i18n_urlpatterns)
