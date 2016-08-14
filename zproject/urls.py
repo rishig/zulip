@@ -8,6 +8,7 @@ import zerver.forms
 from zproject import dev_urls
 from zproject.legacy_urls import legacy_urls
 from zerver.views.integrations import IntegrationView
+from zerver.views.api import APIView
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
 
 # NB: There are several other pieces of code which route requests by URL:
@@ -93,7 +94,7 @@ i18n_urls = [
     url(r'^register/(?P<domain>\S+)/$', 'zerver.views.accounts_home_with_domain'),
 
     # API and integrations documentation
-    url(r'^api/$', TemplateView.as_view(template_name='zerver/api.html')),
+    url(r'^api/$', APIView.as_view(template_name='zerver/api.html')),
     url(r'^api/endpoints/$', 'zerver.views.api_endpoint_docs'),
     url(r'^integrations/$', IntegrationView.as_view()),
     url(r'^apps/$', TemplateView.as_view(template_name='zerver/apps.html')),

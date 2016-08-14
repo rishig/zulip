@@ -328,10 +328,15 @@ def api_endpoint_docs(request):
     raw_calls = open('templates/zerver/api_content.json', 'r').read()
     calls = ujson.loads(raw_calls)
     langs = set()
+    subdomain = get_subdomain(request)
+    subdomain_ = subdomain if subdomain else 'yourZulipDomain'
+    external_api_path_subdomain = '%s.%s' % (subdomain_, settings.EXTERNAL_API_PATH)
+    external_api_uri_subdomain = '%s%s' % (settings.EXTERNAL_URI_SCHEME,
+                                           external_api_path_subdomain)
     for call in calls:
-        call["endpoint"] = "%s/v1/%s" % (settings.EXTERNAL_API_URI, call["endpoint"])
+        call["endpoint"] = "%s/v1/%s" % (external_api_uri_subdomain, call["endpoint"])
         call["example_request"]["curl"] = call["example_request"]["curl"].replace("https://api.zulip.com",
-                                                                                  settings.EXTERNAL_API_URI)
+                                                                                  external_api_uri_subdomain)
         response = call['example_response']
         if '\n' not in response:
             # For 1-line responses, pretty-print them
