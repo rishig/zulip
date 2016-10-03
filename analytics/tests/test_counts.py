@@ -4,9 +4,11 @@ from django.test import TestCase
 
 from datetime import datetime, timedelta
 
-from analytics.lib.counts import CountStat
 from analytics.lib.interval import TimeInterval
-from analytics.lib.counts import process_count_stat
+from analytics.lib.counts import CountStat, process_count_stat, \
+    zerver_count_user_by_realm, zerver_count_message_by_user, \
+    zerver_count_message_by_stream, zerver_count_stream_by_realm, \
+    zerver_count_message_by_huddle
 from analytics.models import UserCount, RealmCount, StreamCount, InstallationCount, Stream, Recipient
 
 from zerver.lib.test_helpers import make_client, get_stream
@@ -93,12 +95,10 @@ class TestDataCollectors(TestCase):
         # type: () -> None
 
         stats = [
-
-            CountStat('test_active_humans', UserProfile, {'is_bot': False, 'is_active': True},
-                      RealmCount, 'hour', 'hour'),
-            CountStat('test_active_bots', UserProfile, {'is_bot': True, 'is_active': True},
-                      RealmCount, 'hour', 'hour')
-        ]
+            CountStat('test_active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
+                      'hour', 'hour'),
+            CountStat('test_active_bots', zerver_count_user_by_realm, {'is_bot': True, 'is_active': True},
+                      'hour', 'hour')]
 
         # TODO these dates should probably be explicit, since the default args for the commands are timezone.now() dependent.
         self.create_user('test_bot1', is_bot=True, is_active=True, date_joined=timezone.now() - timedelta(hours=1))
@@ -119,8 +119,7 @@ class TestDataCollectors(TestCase):
     # test users added in last hour
     def test_add_new_users(self):
         # type: () -> None
-        stat = CountStat('add_new_user_test', UserProfile, {},
-                         RealmCount, 'hour', 'hour')
+        stat = CountStat('add_new_user_test', zerver_count_user_by_realm, {}, 'hour', 'hour')
 
         # add new users to realm in last hour
         self.create_user('email_1', date_joined=parse_datetime('2016-09-27 03:22:50+00:00'))
@@ -142,7 +141,7 @@ class TestDataCollectors(TestCase):
         # type: () -> None
         # might change if we refactor count_query
 
-        stat = CountStat('test_stat_write', Stream, {'invite_only': False}, RealmCount, 'hour', 'hour')
+        stat = CountStat('test_stat_write', zerver_count_stream_by_realm, {'invite_only': False}, 'hour', 'hour')
 
         # add some stuff to zerver_*
         self.create_stream(name='stream1', description='test_analytics_stream',
@@ -172,8 +171,8 @@ class TestDataCollectors(TestCase):
                          date_joined=timezone.now() - timedelta(hours=1))
 
         # run stat to pull active humans
-        stat = CountStat('active_humans', UserProfile, {'is_bot': False, 'is_active': True},
-                         RealmCount, 'hour', 'hour')
+        stat = CountStat('active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
+                         'hour', 'hour')
 
         do_update_past_hour(stat)
 
@@ -194,8 +193,7 @@ class TestDataCollectors(TestCase):
     # test management commands
     def test_update_analytics_tables(self):
         # type: () -> None
-        stat = CountStat('test_messages_sent', Message, {},
-                         UserCount, 'hour', 'hour')
+        stat = CountStat('test_messages_sent', zerver_count_message_by_user, {}, 'hour', 'hour')
 
         self.create_user('human1', is_bot=False, is_active=True,
                          date_joined=parse_datetime('2016-09-27 04:22:50+00:00'))
@@ -232,8 +230,7 @@ class TestDataCollectors(TestCase):
         # type: () -> None
 
         # write some entries to analytics.usercount with smallest interval as day
-        stat = CountStat('test_messages_aggregate', Message, {},
-                         UserCount, 'day', 'hour')
+        stat = CountStat('test_messages_aggregate', zerver_count_message_by_user, {}, 'day', 'hour')
 
         # write some messages
         self.create_user('human1', is_bot=False, is_active=True,
@@ -271,8 +268,7 @@ class TestDataCollectors(TestCase):
 
     def test_message_to_stream_aggregation(self):
         # type: () -> None
-        stat = CountStat('test_messages_to_stream', Message, {},
-                         StreamCount, 'hour', 'hour')
+        stat = CountStat('test_messages_to_stream', zerver_count_message_by_stream, {}, 'hour', 'hour')
 
         # write some messages
         user = get_user_profile_by_email('email')
@@ -297,8 +293,8 @@ class TestDataCollectors(TestCase):
 
     def test_count_before_realm_creation(self):
         # type: () -> None
-        stat = CountStat('test_active_humans', UserProfile, {'is_bot': False, 'is_active': True},
-                         RealmCount, 'hour', 'hour')
+        stat = CountStat('test_active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
+                         'hour', 'hour')
 
         self.realm.date_created = parse_datetime('2016-09-30 01:00:50+00:00')
         self.realm.save()
@@ -317,8 +313,8 @@ class TestDataCollectors(TestCase):
         # type: () -> None
 
         # test that rows with empty counts are returned if realm exists
-        stat = CountStat('test_active_humans', UserProfile, {'is_bot': False, 'is_active': True},
-                         RealmCount, 'hour', 'hour')
+        stat = CountStat('test_active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
+                         'hour', 'hour')
 
         self.create_user('human1', is_bot=False, is_active=True,
                          date_joined=parse_datetime('2016-09-27 02:22:50+00:00'))

@@ -5,13 +5,15 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
-from analytics.lib.counts import process_count_stat, CountStat
 from analytics.models import RealmCount, UserCount
+from analytics.lib.counts import CountStat, process_count_stat, \
+    zerver_count_user_by_realm, zerver_count_message_by_user, \
+    zerver_count_message_by_stream, zerver_count_stream_by_realm, \
+    zerver_count_message_by_huddle
 from zerver.lib.timestamp import datetime_to_string, assert_timezone_aware
 from zerver.models import UserProfile, Message
 
 from typing import Any
-
 
 class Command(BaseCommand):
     help = """Fills Analytics tables.
@@ -50,11 +52,11 @@ class Command(BaseCommand):
         assert_timezone_aware(range_end)
 
         stats = [
-            CountStat('active_humans', UserProfile, {'is_bot': False, 'is_active': True},
-                      RealmCount, 'gauge', 'day'),
-            CountStat('active_bots', UserProfile, {'is_bot': True, 'is_active': True},
-                      RealmCount, 'gauge', 'day'),
-            CountStat('messages_sent', Message, {}, UserCount, 'hour', 'hour')]
+            CountStat('active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
+                      'gauge', 'day'),
+            CountStat('active_bots', zerver_count_user_by_realm, {'is_bot': True, 'is_active': True},
+                      'gauge', 'day'),
+            CountStat('messages_sent', zerver_count_message_by_user, {}, 'hour', 'hour')]
 
         # process analytics counts for stats
         for stat in stats:
