@@ -4,10 +4,9 @@ import datetime
 import calendar
 from django.utils.timezone import utc
 
-def assert_timezone_aware(datetime):
-    # type: (datetime.datetime) -> None
-    if datetime.tzinfo is None:
-        raise ValueError("datetime object should be timezone aware.")
+def is_timezone_aware(datetime_object):
+    # type: (datetime.datetime) -> bool
+    return datetime_object.tzinfo is not None
 
 def timestamp_to_datetime(timestamp):
     # type: (float) -> datetime.datetime
