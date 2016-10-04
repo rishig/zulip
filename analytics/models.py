@@ -23,9 +23,9 @@ class BaseCount(ModelReprMixin, models.Model):
     end_time = models.DateTimeField() # type: datetime.datetime
     interval = models.CharField(max_length=20) # type: text_type
     anomaly = models.ForeignKey(Anomaly, null=True) # type: Optional[Anomaly]
+
     class Meta(object):
         abstract = True
-
 
     @staticmethod
     def extended_id():
@@ -36,8 +36,6 @@ class BaseCount(ModelReprMixin, models.Model):
     def key_model():
         # type: () -> models.Model
         raise NotImplementedError
-
-    # future: could also have an aggregates_to function
 
 class InstallationCount(BaseCount):
 
@@ -102,6 +100,7 @@ class UserCount(BaseCount):
 class StreamCount(BaseCount):
     stream = models.ForeignKey(Stream)
     realm = models.ForeignKey(Realm)
+
     class Meta(object):
         unique_together = ("stream", "property", "end_time", "interval")
 
@@ -122,8 +121,10 @@ class StreamCount(BaseCount):
 class HuddleCount(BaseCount):
     huddle = models.ForeignKey(Recipient)
     user = models.ForeignKey(UserProfile)
+
     class Meta(object):
         unique_together = ("huddle", "property", "end_time", "interval")
+
     @staticmethod
     def extended_id():
         # type: () -> Tuple[str, ...]
@@ -133,7 +134,6 @@ class HuddleCount(BaseCount):
     def key_model():
         # type: () -> models.Model
         return Recipient
-
 
     def __unicode__(self):
         # type: () -> text_type

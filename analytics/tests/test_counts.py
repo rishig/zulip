@@ -17,11 +17,10 @@ from zerver.models import Realm, UserProfile, Message, get_user_profile_by_email
 from typing import Any
 from six import text_type
 
-
 def do_update_past_hour(stat):
     # type: (CountStat) -> Any
-    return process_count_stat(stat, range_start=timezone.now() - timedelta(seconds=3600), range_end=timezone.now())
-
+    return process_count_stat(stat, range_start=timezone.now() - timedelta(seconds=3600),
+                              range_end=timezone.now())
 
 class TestDataCollectors(TestCase):
     def create_user(self, email, **kwargs):
@@ -101,19 +100,24 @@ class TestDataCollectors(TestCase):
                       'hour', 'hour')]
 
         # TODO these dates should probably be explicit, since the default args for the commands are timezone.now() dependent.
-        self.create_user('test_bot1', is_bot=True, is_active=True, date_joined=timezone.now() - timedelta(hours=1))
-        self.create_user('test_bot2', is_bot=True, is_active=True, date_joined=timezone.now() - timedelta(hours=1))
-        self.create_user('test_human', is_bot=False, is_active=True, date_joined=timezone.now() - timedelta(hours=1))
+        self.create_user('test_bot1', is_bot=True, is_active=True,
+                         date_joined=timezone.now() - timedelta(hours=1))
+        self.create_user('test_bot2', is_bot=True, is_active=True,
+                         date_joined=timezone.now() - timedelta(hours=1))
+        self.create_user('test_human', is_bot=False, is_active=True,
+                         date_joined=timezone.now() - timedelta(hours=1))
 
         for stat in stats:
             do_update_past_hour(stat)
 
         human_row = RealmCount.objects.filter(realm=self.realm, interval='day',
-                                              property='test_active_humans').values_list('value', flat=True)[0]
+                                              property='test_active_humans') \
+                                      .values_list('value', flat=True)[0]
         assert (human_row == 1)
 
         bot_row = RealmCount.objects.filter(realm=self.realm, interval='day',
-                                            property='test_active_bots').values_list('value', flat=True)[0]
+                                            property='test_active_bots') \
+                                    .values_list('value', flat=True)[0]
         assert (bot_row == 2)
 
     # test users added in last hour
@@ -141,7 +145,8 @@ class TestDataCollectors(TestCase):
         # type: () -> None
         # might change if we refactor count_query
 
-        stat = CountStat('test_stat_write', zerver_count_stream_by_realm, {'invite_only': False}, 'hour', 'hour')
+        stat = CountStat('test_stat_write', zerver_count_stream_by_realm,
+                         {'invite_only': False}, 'hour', 'hour')
 
         # add some stuff to zerver_*
         self.create_stream(name='stream1', description='test_analytics_stream',
@@ -171,14 +176,15 @@ class TestDataCollectors(TestCase):
                          date_joined=timezone.now() - timedelta(hours=1))
 
         # run stat to pull active humans
-        stat = CountStat('active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
-                         'hour', 'hour')
+        stat = CountStat('active_humans', zerver_count_user_by_realm,
+                         {'is_bot': False, 'is_active': True}, 'hour', 'hour')
 
         do_update_past_hour(stat)
 
         # get row in analytics table
         row_before = RealmCount.objects.filter(realm=self.realm, interval='day',
-                                               property='active_humans').values_list('value', flat=True)[0]
+                                               property='active_humans')\
+                                       .values_list('value', flat=True)[0]
 
         # run command again
         do_update_past_hour(stat)
@@ -201,7 +207,8 @@ class TestDataCollectors(TestCase):
         human1 = get_user_profile_by_email('human1')
         human2 = get_user_profile_by_email('email')
 
-        self.create_message(human1, Recipient(human2.id), pub_date=parse_datetime('2016-09-27 04:30:50+00:00'))
+        self.create_message(human1, Recipient(human2.id),
+                            pub_date=parse_datetime('2016-09-27 04:30:50+00:00'))
 
         # run command
         process_count_stat(stat, range_start=parse_datetime('2016-09-27 04:00:50+00:00'),
@@ -217,7 +224,8 @@ class TestDataCollectors(TestCase):
 
         # check new row has no entries, old ones still there
         updated_usercount_row = UserCount.objects.filter(
-            realm=self.realm, interval='hour', property='test_messages_sent').values_list('value', flat=True)[0]
+            realm=self.realm, interval='hour', property='test_messages_sent') \
+                                                 .values_list('value', flat=True)[0]
 
         new_row = UserCount.objects.filter(realm=self.realm, interval='hour', property='test_messages_sent',
             end_time=datetime(2016, 9, 22, 5, 0).replace(tzinfo=timezone.utc)).exists()
@@ -239,11 +247,14 @@ class TestDataCollectors(TestCase):
         human1 = get_user_profile_by_email('human1')
         human2 = get_user_profile_by_email('email')
 
-        self.create_message(human1, Recipient(human2.id), pub_date=parse_datetime('2016-09-27 04:30:50+00:00'),
+        self.create_message(human1, Recipient(human2.id),
+                            pub_date=parse_datetime('2016-09-27 04:30:50+00:00'),
                             content="hi")
-        self.create_message(human1, Recipient(human2.id), pub_date=parse_datetime('2016-09-27 04:30:50+00:00'),
+        self.create_message(human1, Recipient(human2.id),
+                            pub_date=parse_datetime('2016-09-27 04:30:50+00:00'),
                             content="hello")
-        self.create_message(human1, Recipient(human2.id), pub_date=parse_datetime('2016-09-27 04:30:50+00:00'),
+        self.create_message(human1, Recipient(human2.id),
+                            pub_date=parse_datetime('2016-09-27 04:30:50+00:00'),
                             content="bye")
 
         # run command
@@ -262,8 +273,8 @@ class TestDataCollectors(TestCase):
         assert (realmcount_row == 3)
 
         installationcount_row = InstallationCount.objects.filter(interval='day',
-                                                                 property='test_messages_aggregate').values_list(
-            'value', flat=True)[0]
+                                                                 property='test_messages_aggregate') \
+                                                         .values_list('value', flat=True)[0]
         assert (installationcount_row == 3)
 
     def test_message_to_stream_aggregation(self):
@@ -280,7 +291,8 @@ class TestDataCollectors(TestCase):
         recipient = Recipient(type_id=stream1.id, type=2)
         recipient.save()
 
-        self.create_message(user, recipient, pub_date=parse_datetime('2016-09-27 04:30:50+00:00'), content='hi')
+        self.create_message(user, recipient, pub_date=parse_datetime('2016-09-27 04:30:50+00:00'),
+                            content='hi')
 
         # run command
         process_count_stat(stat, range_start=parse_datetime('2016-09-27 04:00:50+00:00'),
@@ -293,8 +305,8 @@ class TestDataCollectors(TestCase):
 
     def test_count_before_realm_creation(self):
         # type: () -> None
-        stat = CountStat('test_active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
-                         'hour', 'hour')
+        stat = CountStat('test_active_humans', zerver_count_user_by_realm,
+                         {'is_bot': False, 'is_active': True}, 'hour', 'hour')
 
         self.realm.date_created = parse_datetime('2016-09-30 01:00:50+00:00')
         self.realm.save()
@@ -304,8 +316,8 @@ class TestDataCollectors(TestCase):
         # run count prior to realm creation
         process_count_stat(stat, range_start=parse_datetime('2016-09-26 04:00:50+00:00'),
                            range_end=parse_datetime('2016-09-26 05:00:50+00:00'))
-        realm_count = RealmCount.objects.values('realm__name', 'value', 'property').filter(realm=self.realm,
-                                                                                           interval='hour').exists()
+        realm_count = RealmCount.objects.values('realm__name', 'value', 'property') \
+                                        .filter(realm=self.realm, interval='hour').exists()
         # assert no rows exist
         self.assertFalse(realm_count)
 
@@ -313,21 +325,22 @@ class TestDataCollectors(TestCase):
         # type: () -> None
 
         # test that rows with empty counts are returned if realm exists
-        stat = CountStat('test_active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
-                         'hour', 'hour')
+        stat = CountStat('test_active_humans', zerver_count_user_by_realm,
+                         {'is_bot': False, 'is_active': True}, 'hour', 'hour')
 
         self.create_user('human1', is_bot=False, is_active=True,
                          date_joined=parse_datetime('2016-09-27 02:22:50+00:00'))
 
         process_count_stat(stat, range_start=parse_datetime('2016-09-27 01:00:50+00:00'),
                            range_end=parse_datetime('2016-09-27 05:00:50+00:00'))
-        realm_count = RealmCount.objects.values('end_time', 'value').filter(realm=self.realm, interval='hour')
-        empty1 = realm_count.filter(end_time=datetime(2016, 9, 27, 2, 0,
-                                                      tzinfo=timezone.utc)).values_list('value', flat=True)[0]
-        empty2 = realm_count.filter(end_time=datetime(2016, 9, 27, 4, 0,
-                                                      tzinfo=timezone.utc)).values_list('value', flat=True)[0]
-        nonempty = realm_count.filter(end_time=datetime(2016, 9, 27, 5, 0,
-                                                        tzinfo=timezone.utc)).values_list('value', flat=True)[0]
+        realm_count = RealmCount.objects.values('end_time', 'value') \
+                                        .filter(realm=self.realm, interval='hour')
+        empty1 = realm_count.filter(end_time=datetime(2016, 9, 27, 2, 0, tzinfo=timezone.utc)) \
+                            .values_list('value', flat=True)[0]
+        empty2 = realm_count.filter(end_time=datetime(2016, 9, 27, 4, 0, tzinfo=timezone.utc)) \
+                            .values_list('value', flat=True)[0]
+        nonempty = realm_count.filter(end_time=datetime(2016, 9, 27, 5, 0, tzinfo=timezone.utc)) \
+                              .values_list('value', flat=True)[0]
         assert (empty1 == 0)
         assert (empty2 == 0)
         assert (nonempty == 1)

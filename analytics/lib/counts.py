@@ -1,7 +1,8 @@
 from django.db import connection, models
 from datetime import timedelta, datetime
 
-from analytics.models import InstallationCount, RealmCount, UserCount, StreamCount, HuddleCount, BaseCount
+from analytics.models import InstallationCount, RealmCount, \
+    UserCount, StreamCount, HuddleCount, BaseCount
 from analytics.lib.interval import TimeInterval, timeinterval_range
 from zerver.models import Realm, UserProfile, Message, Stream, models
 
@@ -25,7 +26,6 @@ class ZerverCountQuery(object):
         self.analytics_table = analytics_table
         self.query = query
 
-
 def process_count_stat(stat, range_start, range_end):
     # type: (CountStat, datetime, datetime) -> None
     # stats that hit the prod database
@@ -48,8 +48,8 @@ def process_count_stat(stat, range_start, range_end):
                 do_aggregate_to_summary_table(stat, time_interval, RealmCount, InstallationCount)
 
 
-# only two summary tables at the moment: RealmCount and InstallationCount.
-# will have to generalize this a bit if more are added
+# There are only two summary tables at the moment: RealmCount and InstallationCount.
+# Will have to generalize this a bit if more are added
 def do_aggregate_to_summary_table(stat, time_interval, from_table, to_table):
     # type: (CountStat, TimeInterval, Type[BaseCount], Type[BaseCount]) -> None
     if to_table == RealmCount:
@@ -114,7 +114,9 @@ def do_aggregate_hour_to_day(stat, time_interval):
            'group_by' : group_by,
            'property': stat.property}
     cursor = connection.cursor()
-    cursor.execute(query, {'end_time': time_interval.end, 'time_start': time_interval.end - timedelta(days=1), 'time_end': time_interval.end})
+    cursor.execute(query, {'end_time': time_interval.end,
+                           'time_start': time_interval.end - timedelta(days=1),
+                           'time_end': time_interval.end})
     cursor.close()
 
 ## methods that hit the prod databases directly

@@ -24,7 +24,6 @@ class TimeInterval(object):
             self.start = MIN_TIME
         else:
             self.start = subtract_interval(self.end, interval)
-    # add way to init with start_time and end_time, and no interval
 
 # Perhaps the right way to do the next two functions is to have an interval class
 # (subclassed to hourinterval, dayinterval, etc) with methods like floor,
@@ -36,13 +35,14 @@ def floor_to_interval_boundary(datetime_object, interval):
         return datetime(*datetime_object.timetuple()[:3]).replace(tzinfo=datetime_object.tzinfo)
     elif interval == 'hour':
         return datetime(*datetime_object.timetuple()[:4]).replace(tzinfo=datetime_object.tzinfo)
-    # elif interval == '15min': # unused
-    #     timetuple = datetime_object.timetuple()
-    #     return datetime(*timetuple[:4], minutes = timetuple[5] - timetuple[5] % 15, tzinfo=datetime_object.tzinfo)
+    elif interval == '15min': # unused
+        timetuple = datetime_object.timetuple()
+        return datetime(*timetuple[:4], minute = timetuple[5] - timetuple[5] % 15,
+                        tzinfo=datetime_object.tzinfo)
     else:
         raise ValueError("Unknown or unfloorable interval", interval)
 
-# don't have to worry about leap seconds, since datetime doesn't support it
+# Don't have to worry about leap seconds, since datetime doesn't support it
 def subtract_interval(datetime_object, interval):
     # type: (datetime, str) -> datetime
     if interval == 'day':
@@ -73,4 +73,4 @@ def timeinterval_range(first, last, interval, step_interval):
     ans.reverse()
     return ans
 
-# add sum smallest_interval
+# TODO: add sum smallest_interval
