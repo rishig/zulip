@@ -1,7 +1,7 @@
 from django.utils import timezone
 from datetime import datetime, timedelta, MINYEAR
 
-from zerver.lib.timestamp import assert_timezone_aware
+from zerver.lib.timestamp import is_timezone_aware
 from six import text_type
 
 MIN_TIME = datetime(MINYEAR, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
@@ -13,7 +13,8 @@ class TimeInterval(object):
     def __init__(self, interval, end = timezone.now(), floor_to_boundary = 'hour'):
         # type: (str, datetime, str) -> None
         # Not the best logic for when we have intervals like 'quarter', but okay for now
-        assert_timezone_aware(end)
+        if not is_timezone_aware(end):
+            raise ValueError("end must be timezone aware")
         if floor_to_boundary is None:
             self.end = end
         else:

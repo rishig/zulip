@@ -6,10 +6,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 
 from analytics.models import RealmCount, UserCount
-from analytics.lib.counts import CountStat, process_count_stat, \
-    zerver_count_user_by_realm, zerver_count_message_by_user, \
-    zerver_count_message_by_stream, zerver_count_stream_by_realm, \
-    zerver_count_message_by_huddle
+from analytics.lib.counts import COUNT_STATS, CountStat, process_count_stat
 from zerver.lib.timestamp import datetime_to_string, is_timezone_aware
 from zerver.models import UserProfile, Message
 
@@ -33,6 +30,9 @@ class Command(BaseCommand):
                             type=bool,
                             help="Interpret --range-start and --range-end as times in UTC.",
                             default=False)
+        parser.add_argument('--stat', '-q',
+                            type=str,
+                            help="CountStat to process. If omitted, all stats are processed")
 
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
@@ -53,13 +53,8 @@ class Command(BaseCommand):
         if not (is_timezone_aware(range_start) and is_timezone_aware(range_end)):
             raise ValueError("--range-start and --range-end must be timezone aware. Maybe you meant to use the --utc option?")
 
-        stats = [
-            CountStat('active_humans', zerver_count_user_by_realm, {'is_bot': False, 'is_active': True},
-                      'gauge', 'day'),
-            CountStat('active_bots', zerver_count_user_by_realm, {'is_bot': True, 'is_active': True},
-                      'gauge', 'day'),
-            CountStat('messages_sent', zerver_count_message_by_user, {}, 'hour', 'hour')]
-
-        # process analytics counts for stats
-        for stat in stats:
-            process_count_stat(stat, range_start, range_end)
+        if 'stat' in options:
+            process_count_stat(COUNT_STATS[options['stat']], range_start, range_end)
+        else:
+            for stat in COUNT_STATS.values():
+                process_count_stat(stat, range_start, range_end)

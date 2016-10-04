@@ -246,3 +246,10 @@ count_message_by_huddle_query = """
     GROUP BY zerver_message.recipient_id, zerver_message.sender_id
 """
 zerver_count_message_by_huddle = ZerverCountQuery(Message, HuddleCount, count_message_by_huddle_query)
+
+COUNT_STATS = {
+    'active_humans': CountStat('active_humans', zerver_count_user_by_realm,
+                               {'is_bot': False, 'is_active': True}, 'gauge', 'day'),
+    'active_bots': CountStat('active_bots', zerver_count_user_by_realm,
+                             {'is_bot': True, 'is_active': True}, 'gauge', 'day'),
+    'messages_sent': CountStat('messages_sent', zerver_count_message_by_user, {}, 'hour', 'hour')}
