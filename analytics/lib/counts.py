@@ -271,8 +271,19 @@ count_stream_by_realm_query = """
 zerver_count_stream_by_realm = ZerverCountQuery(Stream, RealmCount, count_stream_by_realm_query)
 
 COUNT_STATS = {
+    # day gauge stuff on UserProfile
     'active_humans': CountStat('active_humans', zerver_count_user_by_realm,
                                {'is_bot': False, 'is_active': True}, CountStat.DAY, True),
     'active_bots': CountStat('active_bots', zerver_count_user_by_realm,
                              {'is_bot': True, 'is_active': True}, CountStat.DAY, True),
-    'messages_sent': CountStat('messages_sent', zerver_count_message_by_user, {}, CountStat.HOUR, False)}
+    'total_users': CountStat('total_users', zerver_count_user_by_realm,
+                             {}, CountStat.DAY, True),
+    # day stuff on Message
+    'messages_by_users': CountStat('messages_by_users', zerver_count_message_by_user,
+                                   {}, CountStat.DAY, False),
+    'messages_by_stream': CountStat('messages_by_stream', zerver_count_message_by_stream,
+                                    {}, CountStat.DAY, False),
+    # stream by Realm, hour gauge
+    'public_streams': CountStat('public_streams', zerver_count_stream_by_realm,
+                                {'invite_only': False}, CountStat.HOUR, True),
+}
