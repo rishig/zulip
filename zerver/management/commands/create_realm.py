@@ -7,6 +7,7 @@ from typing import Any, Text
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from zerver.lib.actions import Realm, do_create_realm, set_default_streams
+from zerver.lib.domains import validate_domain
 from zerver.models import RealmAlias, can_add_alias, get_realm
 
 if settings.ZILENCER_ENABLED:
@@ -59,23 +60,6 @@ Usage: ./manage.py create_realm --string_id=acme --name='Acme'"""
                             help='Optionally, the ID of the deployment you '
                                  'want to associate the realm with.')
 
-    def validate_domain(self, domain):
-        # type: (str) -> None
-        # Domains can't contain whitespace if they are to be used in memcached
-        # keys. Seems safer to leave that as the default case regardless of
-        # which backing store we use.
-        if re.search("\s", domain):
-            raise ValueError("Domains can't contain whitespace")
-
-        # Domains must look like domains, ie have the structure of
-        # <subdomain(s)>.<tld>. One reason for this is that bots need
-        # to have valid looking emails.
-        if len(domain.split(".")) < 2:
-            raise ValueError("Domains must contain a '.'")
-
-        if not can_add_alias(domain):
-            raise ValueError("Domain already assigned to an existing realm")
-
     def handle(self, *args, **options):
         # type: (*Any, **Any) -> None
         string_id = options["string_id"]
@@ -92,7 +76,9 @@ Usage: ./manage.py create_realm --string_id=acme --name='Acme'"""
             exit(1)
 
         if domain is not None:
-            self.validate_domain(domain)
+            validate_domain(domain)
+            if not can_add_alias(domain):
+                raise ValueError("Domain already assigned to an existing realm")
 
         if get_realm(string_id) is not None:
             raise ValueError("string_id taken. Please choose another one.")

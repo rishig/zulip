@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from zerver.models import Realm, RealmAlias, get_realm, can_add_alias
 from zerver.lib.actions import get_realm_aliases
+from zerver.lib.domains import validate_domain
 import sys
 
 class Command(BaseCommand):
