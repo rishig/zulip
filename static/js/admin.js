@@ -190,8 +190,8 @@ exports.populate_filters = function (filters_data) {
 };
 
 exports.populate_realm_aliases = function (aliases) {
-    var domains_list = _.map(page_params.domains, function (ADomain) {
-        return ADomain.domain;
+    var domains_list = _.map(page_params.domains, function (alias) {
+        return (alias.subdomains_allowed ? "*." + alias.domain : alias.domain);
     });
     var domains = domains_list.join(', ');
     if (domains.length === 0) {
@@ -913,7 +913,8 @@ function _setup_page() {
     $("#add_alias").click(function () {
         var aliases_info = $("#realm_aliases_modal").find(".aliases_info");
         var data = {
-            domain: $("#new_alias").val(),
+            domain: JSON.stringify($("#new_alias").val()),
+            subdomains_allowed: JSON.stringify($("#subdomains_allowed").prop("checked")),
         };
 
         channel.post({
@@ -921,9 +922,34 @@ function _setup_page() {
             data: data,
             success: function () {
                 $("#new_alias").val("");
+                $("#subdomains_allowed").prop("checked", false);
                 aliases_info.removeClass("text-error");
                 aliases_info.addClass("text-success");
                 aliases_info.text("Added successfully!");
+            },
+            error: function (xhr) {
+                aliases_info.removeClass("text-success");
+                aliases_info.addClass("text-error");
+                aliases_info.text(JSON.parse(xhr.responseText).msg);
+            },
+        });
+    });
+
+    $("#alias_table").on("change", ".subdomains-allowed", function (e) {
+        e.stopPropagation();
+        var aliases_info = $("#realm_aliases_modal").find(".aliases_info");
+        var url = '/json/realm/domains/' + $(this).data('id');
+        var data = {
+            subdomains_allowed: JSON.stringify($(this).prop('checked')),
+        };
+
+        channel.patch({
+            url: url,
+            data: data,
+            success: function () {
+                aliases_info.removeClass("text-error");
+                aliases_info.addClass("text-success");
+                aliases_info.text("Updated successfully!");
             },
             error: function (xhr) {
                 aliases_info.removeClass("text-success");

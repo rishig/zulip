@@ -15,12 +15,11 @@ import ujson
 
 
 class RealmAliasTest(ZulipTestCase):
-
     def test_list(self):
         # type: () -> None
         self.login("iago@zulip.com")
         realm = get_realm('zulip')
-        alias = RealmAlias(realm=realm, domain='zulip.org')
+        alias = RealmAlias(realm=realm, domain='zulip.org', subdomains_allowed=False)
         alias.save()
         result = self.client_get("/json/realm/domains")
         self.assert_json_success(result)
@@ -39,16 +38,36 @@ class RealmAliasTest(ZulipTestCase):
     def test_create(self):
         # type: () -> None
         self.login("iago@zulip.com")
-        data = {"domain": ""}
+        data = {
+            'domain': ujson.dumps(''),
+            'subdomains_allowed': ujson.dumps(False),
+        }
         result = self.client_post("/json/realm/domains", info=data)
-        self.assert_json_error(result, 'Domain can\'t be empty.')
+        self.assert_json_error(result, "Invalid domain: Domain can't be empty.")
 
-        data['domain'] = 'zulip.org'
+        data['domain'] = ujson.dumps('zulip.org')
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_success(result)
 
         result = self.client_post("/json/realm/domains", info=data)
-        self.assert_json_error(result, 'A Realm for this domain already exists.')
+        self.assert_json_error(result, "The domain zulip.org is already a part of your organization.")
+
+    def test_patch(self):
+        # type: () -> None
+        self.login("iago@zulip.com")
+        realm = get_realm('zulip')
+        alias = RealmAlias.objects.create(realm=realm, domain='zulip.org',
+                                          subdomains_allowed=False)
+        data = {
+            'subdomains_allowed': ujson.dumps(True),
+        }
+        url = "/json/realm/domains/{}".format(alias.id)
+        result = self.client_patch(url, data)
+        self.assert_json_success(result)
+
+        url = "/json/realm/domains/-1"
+        result = self.client_patch(url, data)
+        self.assertEqual(result.status_code, 404)
 
     def test_delete(self):
         # type: () -> None
@@ -65,10 +84,24 @@ class RealmAliasTest(ZulipTestCase):
 
     def test_get_realm_by_email_domain(self):
         # type: () -> None
+        realm1, created = do_create_realm('testrealm1', 'Test Realm 1')
+        realm2, created = do_create_realm('testrealm2', 'Test Realm 2')
+
+        alias = RealmAlias.objects.create(realm=realm1, domain='test.com', subdomains_allowed=False)
+        RealmAlias.objects.create(realm=realm2, domain='test1.test.com', subdomains_allowed=True)
+
         self.assertEqual(get_realm_by_email_domain('user@zulip.com').string_id, 'zulip')
         self.assertEqual(get_realm_by_email_domain('user@fakedomain.com'), None)
-        with self.settings(REALMS_HAVE_SUBDOMAINS = True), (
-             self.assertRaises(GetRealmByDomainException)):
+        self.assertEqual(get_realm_by_email_domain('user@test.com').string_id, 'testrealm1')
+        self.assertEqual(get_realm_by_email_domain('user@test1.test.com').string_id, 'testrealm2')
+        self.assertEqual(get_realm_by_email_domain('user@test2.test.com'), None)
+        self.assertEqual(get_realm_by_email_domain('user@test2.test1.test.com').string_id, 'testrealm2')
+
+        do_change_realm_alias(alias, True)
+        self.assertEqual(get_realm_by_email_domain('user@test2.test.com').string_id, 'testrealm1')
+        self.assertEqual(get_realm_by_email_domain('user@test3.test2.test.com').string_id, 'testrealm1')
+
+        with self.settings(REALMS_HAVE_SUBDOMAINS = True), self.assertRaises(GetRealmByDomainException):
             get_realm_by_email_domain('user@zulip.com')
 
     def test_email_allowed_for_realm(self):

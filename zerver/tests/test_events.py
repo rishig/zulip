@@ -817,10 +817,11 @@ class EventsRegisterTest(ZulipTestCase):
             ('alias', check_dict([
                 ('id', check_int),
                 ('domain', check_string),
+                ('subdomains_allowed', check_bool),
             ])),
         ])
         realm = get_realm('zulip')
-        events = self.do_test(lambda: do_add_realm_alias(realm, 'zulip.org'))
+        events = self.do_test(lambda: do_add_realm_alias(realm, 'zulip.org', False))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

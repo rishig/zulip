@@ -1,6 +1,7 @@
 {{#with alias}}
   <tr id="alias_{{id}}">
     <td class="domain">{{domain}}</td>
+    <td><input type="checkbox" class="subdomains-allowed" data-id="{{id}}" {{#if subdomains_allowed}}checked{{/if}}></input></td>
     <td><button class="btn btn-danger btn-sm delete_alias" data-id="{{id}}">{{t "Remove" }}</button></td>
   </tr>
 {{/with}}
