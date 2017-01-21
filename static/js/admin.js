@@ -190,8 +190,8 @@ exports.populate_filters = function (filters_data) {
 };
 
 exports.populate_realm_aliases = function (aliases) {
-    var domains_list = _.map(page_params.domains, function (ADomain) {
-        return ADomain.domain;
+    var domains_list = _.map(aliases, function (alias) {
+        return (alias.allow_subdomains ? "*." + alias.domain : alias.domain);
     });
     var domains = domains_list.join(', ');
     if (domains.length === 0) {
@@ -915,6 +915,7 @@ function _setup_page() {
         var aliases_info = $("#realm_aliases_modal").find(".aliases_info");
         var data = {
             domain: JSON.stringify($("#new_alias").val()),
+            allow_subdomains: JSON.stringify($("#allow_subdomains").prop("checked")),
         };
 
         channel.post({
@@ -922,9 +923,42 @@ function _setup_page() {
             data: data,
             success: function () {
                 $("#new_alias").val("");
+                $("#allow_subdomains").prop("checked", false);
                 aliases_info.removeClass("text-error");
                 aliases_info.addClass("text-success");
                 aliases_info.text("Added successfully!");
+            },
+            error: function (xhr) {
+                aliases_info.removeClass("text-success");
+                aliases_info.addClass("text-error");
+                aliases_info.text(JSON.parse(xhr.responseText).msg);
+            },
+        });
+    });
+
+    $("#alias_table").on("change", ".allow-subdomains", function (e) {
+        e.stopPropagation();
+        var aliases_info = $("#realm_aliases_modal").find(".aliases_info");
+        var domain = $(this).parents("tr").find(".domain").text();
+        var allow_subdomains = $(this).prop('checked');
+        var url = '/json/realm/domains/' + domain;
+        var data = {
+            allow_subdomains: JSON.stringify(allow_subdomains),
+        };
+
+        channel.patch({
+            url: url,
+            data: data,
+            success: function () {
+                aliases_info.removeClass("text-error");
+                aliases_info.addClass("text-success");
+                if (allow_subdomains) {
+                    aliases_info.text(i18n.t("Update successful: Subdomains allowed for __domain__",
+                                             {domain: domain}));
+                } else {
+                    aliases_info.text(i18n.t("Update successful: Subdomains no longer allowed for __domain__",
+                                             {domain: domain}));
+                }
             },
             error: function (xhr) {
                 aliases_info.removeClass("text-success");

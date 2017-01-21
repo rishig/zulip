@@ -83,6 +83,7 @@
           <table class="table table-condensed table-stripped" id="alias_table">
             <thead>
               <th>{{t "Domain" }}</th>
+              <th>{{t "Allow Subdomains"}}</th>
               <th>{{t "Action" }}</th>
             </thead>
             <tbody>
@@ -90,6 +91,7 @@
             <tfoot>
               <tr>
                 <td><input type="text" id="new_alias" placeholder={{t "acme.com" }}></input></td>
+                <td><input type="checkbox" id="allow_subdomains"></input></td>
                 <td><button type="button" class="btn btn-primary" id="add_alias">{{t "Add" }}</button></td>
               </tr>
             </tfoot>
