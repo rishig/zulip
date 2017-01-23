@@ -51,8 +51,8 @@ def patch_alias(request, user_profile, domain, allow_subdomains=REQ(validator=ch
 def delete_alias(request, user_profile, domain):
     # type: (HttpRequest, UserProfile, Text) -> (HttpResponse)
     try:
-        RealmAlias.objects.get(realm=user_profile.realm, domain=domain)
-        do_remove_realm_alias(user_profile.realm, domain)
+        alias = RealmAlias.objects.get(realm=user_profile.realm, domain=domain)
+        do_remove_realm_alias(alias)
     except RealmAlias.DoesNotExist:
         return json_error(_('No entry found for domain %(domain)s.' % {'domain': domain}))
     return json_success()

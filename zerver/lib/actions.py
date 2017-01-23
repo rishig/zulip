@@ -3701,9 +3701,11 @@ def do_change_realm_alias(alias, allow_subdomains):
                             allow_subdomains=alias.allow_subdomains))
     send_event(event, active_user_ids(alias.realm))
 
-def do_remove_realm_alias(realm, domain):
-    # type: (Realm, Text) -> None
-    RealmAlias.objects.get(realm=realm, domain=domain).delete()
+def do_remove_realm_alias(alias):
+    # type: (RealmAlias) -> None
+    realm = alias.realm
+    domain = alias.domain
+    alias.delete()
     event = dict(type="realm_domains", op="remove", domain=domain)
     send_event(event, active_user_ids(realm))
 
