@@ -177,6 +177,10 @@ exports.report_success = function (response, status_box, type) {
     ui.report_message(response, status_box, 'alert-success', type);
 };
 
+    exports.show_tutorial_glowy_things(which_things) {
+        leave empty for now;
+    }
+
 function update_message_in_all_views(message_id, callback) {
     _.each([message_list.all, home_msg_list, message_list.narrowed], function (list) {
         if (list === undefined) {

@@ -264,6 +264,11 @@ v1_api_and_json_patterns = [
         {'PUT': 'zerver.views.user_settings.set_avatar_backend',
          'DELETE': 'zerver.views.user_settings.delete_avatar_backend'}),
 
+    in users/me/tutorial (code will live in zerver/views/tutorial.py, but it will call functions in zerver.lib.actions.py)
+    GET: get the next set of things
+    POST: record that did a piece
+    DELETE: (restart tutorial)
+
     # settings -> zerver.views.user_settings
     url(r'^settings/display$', rest_dispatch,
         {'PATCH': 'zerver.views.user_settings.update_display_settings_backend'}),

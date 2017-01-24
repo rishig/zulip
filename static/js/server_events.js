@@ -132,6 +132,10 @@ function dispatch_normal_event(event) {
         }
         break;
 
+    case 'tutorial':
+        tutorial.show_tutorial_glowy_things(event.tutorial)
+        break;
+
     case 'referral':
         referral.update_state(event.referrals.granted, event.referrals.used);
         break;

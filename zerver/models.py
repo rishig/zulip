@@ -561,6 +561,8 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
     # completed.
     onboarding_steps = models.TextField(default=u'[]') # type: Text
 
+    tutorial_something = BitField (similar to UserMessage, except with 128 bits)
+
     invites_granted = models.IntegerField(default=0) # type: int
     invites_used = models.IntegerField(default=0) # type: int
 
@@ -614,6 +616,15 @@ class UserProfile(ModelReprMixin, AbstractBaseUser, PermissionsMixin):
             return int(self.tos_version.split('.')[0])
         else:
             return -1
+
+def get_seen_tutioral_pieces(user_profile):
+    pass
+
+def record_seen_tutorial_piece(user_profile):
+    pass
+
+def get_next_tutorial_pieces(user_profile):
+    pass
 
 def receives_offline_notifications(user_profile):
     # type: (UserProfile) -> bool

@@ -3088,6 +3088,9 @@ def fetch_initial_state_data(user_profile, event_types, queue_id):
         state['realm_default_language'] = user_profile.realm.default_language
         state['realm_waiting_period_threshold'] = user_profile.realm.waiting_period_threshold
 
+    if want('tutorial'):
+        state['tutorial'] = call thing from models.py "get tutorial_pieces_state"
+
     if want('realm_domain'):
         state['realm_domain'] = user_profile.realm.domain
 
@@ -3307,6 +3310,8 @@ def apply_events(state, events, user_profile):
         elif event['type'] == "update_message":
             # The client will get the updated message directly
             pass
+        elif event['type'] == 'tutorial':
+            modify state['tutorial'] approriately
         elif event['type'] == "referral":
             state['referrals'] = event['referrals']
         elif event['type'] == "update_message_flags":
@@ -3379,6 +3384,13 @@ def do_events_register(user_profile, user_client, apply_markdown=True,
     else:
         ret['last_event_id'] = -1
     return ret
+
+in the user profile functions section
+def do_set_tutorial_piece_read(user_profile, tutorial_piece):
+    get the user profile
+    set it
+    event = ['tutorial' ..]
+    send_event(event, all browsers of user)
 
 def do_send_confirmation_email(invitee, referrer):
     # type: (PreregistrationUser, UserProfile) -> None
