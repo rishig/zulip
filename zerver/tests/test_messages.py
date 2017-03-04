@@ -287,7 +287,7 @@ class PersonalMessagesTest(ZulipTestCase):
         with mock.patch('zerver.models.get_display_recipient', return_value='recip'):
             self.assertEqual(str(message),
                              u'<Message: recip /  / '
-                             '<UserProfile: test@zulip.com <Realm: zulip.com 1>>>')
+                             '<UserProfile: test@zulip.com <Realm: zulip 1>>>')
 
             user_message = most_recent_usermessage(user_profile)
             self.assertEqual(str(user_message),
@@ -463,7 +463,7 @@ class StreamMessagesTest(ZulipTestCase):
         message = most_recent_message(user_profile)
         self.assertEqual(str(message),
                          u'<Message: Denmark / my topic / '
-                         '<UserProfile: hamlet@zulip.com <Realm: zulip.com 1>>>')
+                         '<UserProfile: hamlet@zulip.com <Realm: zulip 1>>>')
 
     def test_message_mentions(self):
         # type: () -> None
@@ -923,7 +923,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "realm_str": "mit"})
         self.assert_json_error(result, "User not authorized for this query")
 
-    def test_send_message_as_superuser_to_domain_that_dont_exist(self):
+    def test_send_message_as_superuser_to_domain_that_doesnt_exist(self):
         # type: () -> None
         email = "emailgateway@zulip.com"
         user = get_user_profile_by_email(email)
