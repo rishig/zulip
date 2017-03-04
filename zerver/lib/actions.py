@@ -108,7 +108,9 @@ STREAM_ASSIGNMENT_COLORS = [
     "#9987e1", "#e4523d", "#c2c2c2", "#4f8de4",
     "#c6a8ad", "#e7cc4d", "#c8bebf", "#a47462"]
 
-# Store an event in the log for re-importing messages
+# Store an event in the log for re-importing messages (re-importing messages
+# from the log is no longer supported, but leaving this here as we
+# transition from writing to the log file to writing to models.RealmAuditLog)
 def log_event(event):
     # type: (MutableMapping[str, Any]) -> None
     if settings.EVENT_LOG_DIR is None:
@@ -404,7 +406,7 @@ def do_create_user(email, password, realm, full_name, short_name,
              'full_name': full_name,
              'short_name': short_name,
              'user': email,
-             'domain': realm.domain,
+             'realm': realm.string_id,
              'bot': bool(bot_type)}
     if bot_type:
         event['bot_owner'] = bot_owner.email
@@ -633,7 +635,7 @@ def do_deactivate_user(user_profile, log=True, _cascade=True):
         log_event({'type': 'user_deactivated',
                    'timestamp': time.time(),
                    'user': user_profile.email,
-                   'domain': user_profile.realm.domain})
+                   'realm': user_profile.realm.string_id})
 
     event = dict(type="realm_user", op="remove",
                  person=dict(email=user_profile.email,
@@ -1438,8 +1440,7 @@ def validate_user_access_to_subscribers(user_profile, stream):
     """
     validate_user_access_to_subscribers_helper(
         user_profile,
-        {"realm__domain": stream.realm.domain,
-         "realm_id": stream.realm_id,
+        {"realm_id": stream.realm_id,
          "invite_only": stream.invite_only},
         # We use a lambda here so that we only compute whether the
         # user is subscribed if we have to
@@ -1536,7 +1537,7 @@ def notify_subscriptions_added(user_profile, sub_pairs, stream_emails, no_log=Fa
         log_event({'type': 'subscription_added',
                    'user': user_profile.email,
                    'names': [stream.name for sub, stream in sub_pairs],
-                   'domain': user_profile.realm.domain})
+                   'realm': user_profile.realm.string_id})
 
     # Send a notification to the user who subscribed.
     payload = [dict(name=stream.name,
@@ -1726,7 +1727,7 @@ def notify_subscriptions_removed(user_profile, streams, no_log=False):
         log_event({'type': 'subscription_removed',
                    'user': user_profile.email,
                    'names': [stream.name for stream in streams],
-                   'domain': user_profile.realm.domain})
+                   'realm': user_profile.realm.string_id})
 
     payload = [dict(name=stream.name, stream_id=stream.id) for stream in streams]
     event = dict(type="subscription", op="remove",
@@ -1847,10 +1848,9 @@ def do_activate_user(user_profile, log=True, join_date=timezone.now()):
                                      "is_mirror_dummy", "tos_version"])
 
     if log:
-        domain = user_profile.realm.domain
         log_event({'type': 'user_activated',
                    'user': user_profile.email,
-                   'domain': domain})
+                   'realm': user_profile.realm.string_id})
 
     notify_created_user(user_profile)
 
@@ -1861,10 +1861,9 @@ def do_reactivate_user(user_profile):
     user_profile.is_active = True
     user_profile.save(update_fields=["is_active"])
 
-    domain = user_profile.realm.domain
     log_event({'type': 'user_reactivated',
                'user': user_profile.email,
-               'domain': domain})
+               'realm': user_profile.realm.string_id})
 
     notify_created_user(user_profile)
 
@@ -2107,7 +2106,7 @@ def do_rename_stream(stream, new_name, log=True):
 
     if log:
         log_event({'type': 'stream_name_change',
-                   'domain': stream.realm.domain,
+                   'realm': stream.realm.string_id,
                    'new_name': new_name})
 
     recipient = get_recipient(Recipient.STREAM, stream.id)
@@ -2407,7 +2406,7 @@ def set_default_streams(realm, stream_dict):
         DefaultStream.objects.get_or_create(stream=realm.notifications_stream, realm=realm)
 
     log_event({'type': 'default_streams',
-               'domain': realm.domain,
+               'realm': realm.string_id,
                'streams': stream_names})
 
 def notify_default_streams(realm):
@@ -3267,7 +3266,7 @@ def do_refer_friend(user_profile, email):
     content = ('Referrer: "%s" <%s>\n'
                'Realm: %s\n'
                'Referred: %s') % (user_profile.full_name, user_profile.email,
-                                  user_profile.realm.domain, email)
+                                  user_profile.realm.string_id, email)
     subject = "Zulip referral: %s" % (email,)
     from_email = '"%s" <%s>' % (user_profile.full_name, 'referrals@zulip.com')
     to_email = '"Zulip Referrals" <zulip+referrals@zulip.com>'
