@@ -244,7 +244,7 @@ def send_signup_message(sender, signups_stream, user_profile,
         sender,
         "stream",
         signups_stream,
-        user_profile.realm.domain,
+        user_profile.realm.string_id,
         "%s <`%s`> just signed up for Zulip!%s(total: **%i**)" % (
             user_profile.full_name,
             user_profile.email,
@@ -257,7 +257,7 @@ def notify_new_user(user_profile, internal=False):
     # type: (UserProfile, bool) -> None
     if settings.NEW_USER_BOT is not None:
         send_signup_message(settings.NEW_USER_BOT, "signups", user_profile, internal)
-    statsd.gauge("users.signups.%s" % (user_profile.realm.domain.replace('.', '_')), 1, delta=True)
+    statsd.gauge("users.signups.%s" % (user_profile.realm.string_id), 1, delta=True)
 
 def add_new_user_history(user_profile, streams):
     # type: (UserProfile, Iterable[Stream]) -> None
@@ -318,7 +318,7 @@ def process_new_human_user(user_profile, prereg_user=None, newsletter_data=None)
             settings.NOTIFICATION_BOT,
             "private",
             prereg_user.referred_by.email,
-            user_profile.realm.domain,
+            user_profile.realm.string_id,
             "%s <`%s`> accepted your invitation to join Zulip!" % (
                 user_profile.full_name,
                 user_profile.email,
