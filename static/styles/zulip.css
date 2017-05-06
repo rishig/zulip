@@ -995,10 +995,6 @@ td.pointer {
     border-right: 1px solid #e2e2e2;
 }
 
-.mention .messagebox-content {
-    background-color: #ffe4e0;
-}
-
 .messagebox .message_top_line {
     position: relative;
 }
@@ -2525,24 +2521,17 @@ img.emoji {
 }
 
 .user-mention {
-    background-color: #eee;
-    border-radius: 3px;
-    padding: 0 0.2em;
-    box-shadow: 0px 0px 0px 1px #ccc;
-    margin-right: 2px;
     white-space: nowrap;
-    background-image: -moz-linear-gradient(top, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 100%);
-    background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0.1)), color-stop(100%,rgba(0,0,0,0)));
-    background-image: -webkit-linear-gradient(top, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
-    background-image: -o-linear-gradient(top, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
-    background-image: -ms-linear-gradient(top, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
-    background-image: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%,rgba(0,0,0,0) 100%);
     display: inline-block;
-    margin-bottom: 1px;
+    color: hsl(160, 100%, 25%);
 }
 
 .user-mention-me {
-    background-color: #c9fcc1;
+    background-color: hsl(180, 50%, 87%);
+    border-radius: 4px;
+    padding: 0 .2em;
+    margin-right: 1px;
+    margin-bottom: 1px;
 }
 
 .alert-word {
