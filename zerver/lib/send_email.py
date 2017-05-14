@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
-from django.template import loader, TemplateDoesNotExist
+from django.template import loader
 from django.utils.timezone import now as timezone_now
 from zerver.models import UserProfile, ScheduledJob
 
@@ -20,11 +20,7 @@ def send_email(template_prefix, to_email, from_email=None, reply_to_email=None, 
     # type: (str, Text, Optional[Text], Optional[Text], Dict[str, Any]) -> bool
     subject = loader.render_to_string(template_prefix + '.subject', context).strip()
     message = loader.render_to_string(template_prefix + '.txt', context)
-    # Remove try/expect once https://github.com/zulip/zulip/issues/4691 is resolved.
-    try:
-        html_message = loader.render_to_string(template_prefix + '.html', context)
-    except TemplateDoesNotExist:
-        html_message = None
+    html_message = loader.render_to_string(template_prefix + '.html', context)
     if from_email is None:
         from_email = settings.NOREPLY_EMAIL_ADDRESS
     reply_to = None
