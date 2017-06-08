@@ -81,3 +81,7 @@ def generate_all_emails(request):
     # Follow up day1 day2 emails
     enqueue_welcome_emails(user_profile)
     return redirect(email_page)
+
+    # Confirm server registration email
+    result = client.post('/remotes/register/', {'email': unregistered_email_1}, **host_kwargs)
+    assert result.status_code == 302
