@@ -141,6 +141,7 @@ def zulip_default_context(request):
         'secrets_path': secrets_path,
         'settings_comments_path': settings_comments_path,
         'platform': platform,
+        'zilencer_enabled': settings.ZILENCER_ENABLED,
     }
 
 
