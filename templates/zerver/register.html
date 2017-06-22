@@ -32,7 +32,6 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             <input id="id_email" type='text' disabled="true" placeholder="{{ email }}" required />
             <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
             <div class="required"></div>
-            <img class="valid" src="/static/images/checkbox-valid.svg" alt="{{ _('Valid') }}" />
         </div>
 
         <div class="input-box">
@@ -49,7 +48,6 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     {% endfor %}
                 {% endif %}
             {% endif %}
-            <img class="valid" src="/static/images/checkbox-valid.svg" alt="{{ _('Valid') }}" />
         </div>
 
         <div class="input-box full-width">
@@ -67,7 +65,6 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                    data-min-quality="{{password_min_quality}}" required />
             <label for="id_password" class="inline-block">{{ _('Password') }}</label>
             <div class="required"></div>
-            <img class="valid" src="/static/images/checkbox-valid.svg" alt="{{ _('Valid') }}" />
             {% if full_name %}
             <span class="help-inline">
               {{ _('This is used for mobile applications and other tools that require a password.') }}
@@ -93,7 +90,6 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     value="{% if form.realm_name.value() %}{{ form.realm_name.value() }}{% endif %}"
                     name="realm_name" maxlength={{ MAX_REALM_NAME_LENGTH }} required />
                 <div class="required"></div>
-                <img class="valid" src="/static/images/checkbox-valid.svg" alt="{{ _('Valid') }}" />
             </div>
             <label for="id_team_name" class="inline-block label-title">{{ _('Organization name') }}</label>
             {% if form.realm_name.errors %}
@@ -122,7 +118,6 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
                         name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }} required />
                     <div class="required"></div>
-                    <img class="valid" src="/static/images/checkbox-valid.svg" alt="{{ _('Valid') }}" />
                 </div>
                 {% if realms_have_subdomains %}
                 <div class="inline-block external-host"> .{{ external_host }}</div>
