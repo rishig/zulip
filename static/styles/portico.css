@@ -277,7 +277,7 @@ img.screenshot {
 
 #registration #pw_strength {
     width: 325px;
-    margin-top: 20px;
+    margin: 20px auto 0;
 }
 
 .def:before {
