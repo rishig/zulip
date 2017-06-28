@@ -10,6 +10,10 @@ import ujson
 
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Text
 
+class FromAddress(object):
+    SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1] (or whatever the right incantation is)
+    NOREPLY = ...
+
 def display_email(user):
     # type: (UserProfile) -> Text
     # Change to '%s <%s>' % (user.full_name, user.email) once
