@@ -40,6 +40,8 @@ ALLOWED_HOSTS = [EXTERNAL_HOST.split(":")[0]]
 # appear on 404 pages, is used as the sender's address for many automated
 # emails, and is advertised as a support address. An email address like
 # support@example.com is totally reasonable, as is admin@example.com.
+# Do not put a display name; e.g. 'support@example.com', not
+# 'Zulip Support <support@example.com>'.
 ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 
 # Configure the outgoing SMTP server below. You will need working
@@ -74,9 +76,11 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = ''
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-# The noreply address to be used as Reply-To for certain generated emails.
-# Messages sent to this address should not be delivered anywhere.
-NOREPLY_EMAIL_ADDRESS = "Zulip <noreply@example.com>"
+# The noreply address to be used as the sender for certain generated emails.
+# Messages sent to this address could contain sensitive user data and should
+# not be delivered anywhere. Do not put a display name;
+# e.g. 'noreply@example.com', not 'Zulip <noreply@example.com>'.
+NOREPLY_EMAIL_ADDRESS = 'noreply@example.com'
 
 
 ## OPTIONAL SETTINGS
