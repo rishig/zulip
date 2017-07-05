@@ -111,10 +111,13 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </label>
                 <div class="breakpoint">
                     <div class="inline-block relative">
-                        <input id="id_team_subdomain" class="required" type="text"
+                        <input id="id_team_subdomain" class="required {% if realms_have_subdomains %}realm_subdomain{% endif %}" type="text"
                             placeholder="acme"
                             value="{% if form.realm_subdomain.value() %}{{ form.realm_subdomain.value() }}{% endif %}"
                             name="realm_subdomain" maxlength={{ MAX_REALM_SUBDOMAIN_LENGTH }} required />
+                        {% if realms_have_subdomains %}
+                            <p class="realm_subdomain_label">.host.com</p>
+                        {% endif %}
                         <div class="required"></div>
                     </div>
                     <p id="id_team_subdomain_error_client" class="error help-inline text-error"></p>
