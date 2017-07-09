@@ -27,7 +27,8 @@ from zerver.lib.users import check_change_full_name
 from zerver.lib.timezone import get_all_timezones
 from zerver.models import UserProfile, Realm, name_changes_disabled, \
     EmailChangeStatus
-from confirmation.models import get_object_from_key
+from confirmation.models import get_object_from_key, ConfirmationKeyException, \
+    render_confirmation_key_error
 
 @zulip_login_required
 def confirm_email_change(request, confirmation_key):
@@ -37,7 +38,11 @@ def confirm_email_change(request, confirmation_key):
         raise JsonableError(_("Email address changes are disabled in this organization."))
 
     confirmation_key = confirmation_key.lower()
-    obj = get_object_from_key(confirmation_key)
+    try:
+        obj = get_object_from_key(confirmation_key)
+    except ConfirmationKeyException as exception:
+        return render_confirmation_key_error(request, exception)
+
     confirmed = False
     new_email = old_email = None  # type: Text
     if obj:

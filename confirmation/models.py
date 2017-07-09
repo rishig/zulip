@@ -12,6 +12,7 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.send_email import send_email
@@ -19,20 +20,39 @@ from zerver.lib.utils import generate_random_token
 from zerver.models import PreregistrationUser, EmailChangeStatus
 from typing import Any, Dict, Optional, Text, Union
 
+class ConfirmationKeyException(Exception):
+    WRONG_LENGTH = 1
+    EXPIRED = 2
+    DOES_NOT_EXIST = 3
+    def __init__(self, error_type):
+        # type: (int) -> None
+        super(Exception, self).__init__()
+        self.error_type = error_type
+
+def render_confirmation_key_error(request, exception):
+    # type: (HttpRequest, ConfirmationKeyException) -> HttpResponse
+    if exception.error_type == ConfirmationKeyException.WRONG_LENGTH:
+        return render(request, 'confirmation/link_malformed.html')
+    if exception.error_type == ConfirmationKeyException.EXPIRED:
+        return render(request, 'confirmation/link_expired.html')
+    return render(request, 'confirmation/link_does_not_exist.html')
+
 def generate_key():
     # type: () -> str
     return generate_random_token(40)
 
 def get_object_from_key(confirmation_key):
-    # type: (str) -> Union[bool, PreregistrationUser, EmailChangeStatus]
+    # type: (str) -> Union[PreregistrationUser, EmailChangeStatus]
+    if len(confirmation_key) != 40:
+        raise ConfirmationKeyException(ConfirmationKeyException.WRONG_LENGTH)
     try:
         confirmation = Confirmation.objects.get(confirmation_key=confirmation_key)
     except Confirmation.DoesNotExist:
-        return False
+        raise ConfirmationKeyException(ConfirmationKeyException.DOES_NOT_EXIST)
 
     time_elapsed = timezone_now() - confirmation.date_sent
     if time_elapsed.total_seconds() > _properties[confirmation.type].validity_in_days * 24 * 3600:
-        return False
+        raise ConfirmationKeyException(ConfirmationKeyException.EXPIRED)
 
     obj = confirmation.content_object
     obj.status = getattr(settings, 'STATUS_ACTIVE', 1)
