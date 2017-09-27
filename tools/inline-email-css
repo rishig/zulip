@@ -50,5 +50,13 @@ if __name__ == "__main__":
         for escaped, original in escaped_jinja2_characters:
             output = output.replace(escaped, original)
 
+        # Premailer.transform will try to complete the DOM tree, adding
+        # html, head, and body tags if they aren't there.
+        # Strip this stuff out if the template extends another
+        start = output.find('{% extends')
+        end = output.find('{% endblock %}</body>\n</html>')
+        if start != -1 and end != -1:
+            output = output[start:end+len('{% endblock %}')]
+
         with open(compiled_template_path, 'w') as final_template_file:
             final_template_file.write(output)
