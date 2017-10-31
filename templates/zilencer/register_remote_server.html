@@ -23,7 +23,7 @@
                     <input type="text" id="hostname" name="hostname"
                            value="{% if form.hostname.value() %}{{ form.hostname.value() }}{% endif %}"
                            maxlength="{{ form.hostname.field.max_length }}"
-                           placeholder={{ "https://acme.zulip.com" }}
+                           placeholder={{ "https://zulip.acme.com" }}
                            />
                     {% if form.hostname.errors %}
                         {% for error in form.hostname.errors %}
@@ -50,6 +50,7 @@
                 <div class="input-box">
                     <input type="password" id="server_api_key" name="server_api_key" value=""
                            maxlength="{{ form.server_api_key.field.max_length }}"
+                           placeholder={{ "abcdef01232456789" }}
                            />
                     <label for="server_api_key">{{ _('Zulip organization key') }}</label>
                     {% if form.server_api_key.errors %}

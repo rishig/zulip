@@ -115,7 +115,7 @@ def remote_server_notify_push(request,  # type: HttpRequest
 def register_remote_server(request):
     # type: (HttpRequest) -> HttpResponse
     if request.method == 'POST':
-        form = StartRemoteServerRegistrationForm(request.POST)
+        form = StartServerRegistrationForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
             with transaction.atomic():
@@ -132,7 +132,7 @@ def register_remote_server(request):
             return HttpResponseRedirect(
                 reverse('remotes_send_confirm', kwargs={'email': email}))
     else:
-        form = StartRemoteServerRegistrationForm()
+        form = StartServerRegistrationForm()
 
     return render(
         request,
@@ -149,7 +149,7 @@ def confirm(request, confirmation_key):
 
     if request.method == 'POST':
         assert isinstance(status_obj, RemoteServerRegistrationStatus)
-        form = RemoteServerRegistrationForm(request.POST)
+        form = ServerRegistrationForm(request.POST)
         if form.is_valid():
             api_key = form.cleaned_data['server_api_key']
             uuid = form.cleaned_data['server_uuid']
@@ -163,7 +163,7 @@ def confirm(request, confirmation_key):
             return render(request, 'confirmation/confirm_remote_server.html',
                           {'hostname': hostname})
     else:
-        form = RemoteServerRegistrationForm()
+        form = ServerRegistrationForm()
 
     context = {'form': form, 'current_url': request.get_full_path}
     return render(request, 'zilencer/register_remote_server.html',

@@ -2,6 +2,7 @@ import uuid
 from typing import Any
 
 from django import forms
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 
@@ -27,20 +28,32 @@ class ServerRegistrationForm(forms.Form):
         try:
             uuid.UUID(server_uuid)
         except ValueError:
-            raise ValidationError(_('Enter a valid UUID.'))
+            raise ValidationError(_('Not a valid zulip_org_id.'))
 
         if RemoteZulipServer.objects.filter(uuid=server_uuid).exists():
-            raise ValidationError(_("Zulip organization id already exists."))
+            raise ValidationError(
+                _("This zulip_org_id has already been registered. "
+                  "Contact {email} to update your registration information.").format(
+                      email=settings.ZULIP_ADMINISTRATOR))
         return server_uuid
+
+    def clean_server_api_key(self):
+        # type: () -> None
+        server_api_key = self.cleaned_data['server_api_key']
+        if len(server_api_key) != RemoteZulipServer.API_KEY_LENGTH:
+            raise ValidationError(_('Not a valid zulip_api_key'))
+        forms.CharField(max_length=RemoteZulipServer.API_KEY_LENGTH)
+
 
     def clean_hostname(self):
         # type: () -> None
         hostname = self.cleaned_data['hostname']
         if not hostname.startswith('https://'):
-            raise ValidationError(_("Hostname should start with https://."))
+            raise ValidationError(_("Hostname must start with https://."))
 
         if RemoteZulipServer.objects.filter(hostname=hostname).exists():
             raise ValidationError(
-                _("{hostname} has already been registered.").format(
-                    hostname=hostname))
+                _("{hostname} has already been registered. "
+                  "Contact {email} to update your registration information.").format(
+                      hostname=hostname, email=settings.ZULIP_ADMINISTRATOR))
         return hostname
