@@ -1,7 +1,7 @@
 Hello,
 
 You recently started the process of registering your server with the Zulip
-mobile push notification service. Awesome!
+mobile push notification service.
 
 To complete registration, please visit this link below:
     <{{ activate_url }}>

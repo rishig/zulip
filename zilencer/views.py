@@ -144,11 +144,11 @@ def confirm(request, confirmation_key):
     confirmation_key = confirmation_key.lower()
     try:
         status_obj = get_object_from_key(confirmation_key)
+        assert isinstance(status_obj, RemoteServerRegistrationStatus)
     except ConfirmationKeyException as exception:
         return render_confirmation_key_error(request, exception)
 
     if request.method == 'POST':
-        assert isinstance(status_obj, RemoteServerRegistrationStatus)
         form = ServerRegistrationForm(request.POST)
         if form.is_valid():
             api_key = form.cleaned_data['server_api_key']

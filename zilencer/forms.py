@@ -41,7 +41,7 @@ class ServerRegistrationForm(forms.Form):
         # type: () -> None
         server_api_key = self.cleaned_data['server_api_key']
         if len(server_api_key) != RemoteZulipServer.API_KEY_LENGTH:
-            raise ValidationError(_('Not a valid zulip_api_key'))
+            raise ValidationError(_('Not a valid zulip_api_key.'))
         forms.CharField(max_length=RemoteZulipServer.API_KEY_LENGTH)
 
 

@@ -48,9 +48,8 @@
                 </div>
 
                 <div class="input-box">
-                    <input type="password" id="server_api_key" name="server_api_key" value=""
+                    <input type="text" id="server_api_key" name="server_api_key" value=""
                            maxlength="{{ form.server_api_key.field.max_length }}"
-                           placeholder={{ "abcdef01232456789" }}
                            />
                     <label for="server_api_key">{{ _('Zulip organization key') }}</label>
                     {% if form.server_api_key.errors %}

@@ -11,17 +11,21 @@ $(function () {
 <div class="app register-page split-view flex full-page new-style">
     <div class="inline-block">
         <div class="lead">
-            <h1 class="get-started">{{ _("Register remote server") }}</h1>
+            <h1 class="get-started">{{ _("Register a Zulip server") }}</h1>
         </div>
         <div class="app-main register-page-container white-box">
             <div class="register-form new-style">
                 <div class="left-side">
                     <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec
-                        magna nunc, vehicula in elementum sed, volutpat at nisi. Sed id
-                        semper ex. Sed ullamcorper eros turpis, et mollis mi aliquam at.
-                        Etiam mattis, augue eu dignissim tempus, quam lectus blandit eros,
-                        sit amet ornare sapien lectus id dolor.
+                        Register your server for the Zulip push notification
+                        service.
+                    </p>
+                    <p>
+                        You can read more about the registration process and
+                        how the notification service works
+                        <a href="http://zulip.readthedocs.io/en/latest/prod-mobile-push-notifications.html">here</a>.
+                        The whole process takes only a couple of
+                        minutes.
                     </p>
                 </div>
                 <div class="right-side">
@@ -32,7 +36,7 @@ $(function () {
                         <div class="input-box no-validation">
                             <input id="email" type="email" class="email required" name="email"
                                    value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}"
-                                   placeholder={{ "wile@acme.com" }}
+                                   placeholder={{ "ops@acme.com" }}
                                    required />
                             {% if form.email.errors %}
                                 {% for error in form.email.errors %}
@@ -40,6 +44,12 @@ $(function () {
                                 {% endfor %}
                             {% endif %}
                             <label for="email">{{ _('Email') }}</label>
+                            <p>
+                                Used for announcing new releases, security
+                                advisories, updates to the terms of service, and to
+                                contact you in case anything is going wrong. We average
+                                roughly 1 email a month.
+                            </p>
                         </div>
 
                         <button class="full-width" type="submit" name="">{{ _('Register') }}</button>
