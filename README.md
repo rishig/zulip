@@ -32,22 +32,6 @@ There are several places online where folks discuss Zulip.
   [Zulip development community Zulip server][czo-doc] at
   chat.zulip.org.
 
-* For Google Summer of Code students and applicants, we have
-[a mailing list](https://groups.google.com/forum/#!forum/zulip-gsoc)
-for help, questions, and announcements.  But it's often simpler to
-[visit chat.zulip.org][czo-doc] instead.
-
-* We have a [public development discussion mailing list][zulip-devel],
-zulip-devel, which is currently pretty low traffic because most
-discussions happen in our public Zulip instance.  We use it to
-announce Zulip developer community gatherings and ask for feedback on
-major technical or design decisions.  It has several hundred
-subscribers, so you can use it to ask questions about features or
-possible bugs, but please don't use it ask for generic help getting
-started as a contributor (e.g. because you want to do Google Summer of
-Code).  The rest of this page covers how to get involved in the Zulip
-project in detail.
-
 * Zulip also has a [blog](https://blog.zulip.org/) and
   [twitter account](https://twitter.com/zulip).
 
@@ -58,8 +42,6 @@ pertaining to bugs or enhancement requests.  We also use Pull Requests
 as our primary mechanism to receive code contributions.
 
 The Zulip community has a [Code of Conduct][code-of-conduct].
-
-[zulip-devel]: https://groups.google.com/forum/#!forum/zulip-devel
 
 ## Installing the Zulip Development environment
 
@@ -100,14 +82,9 @@ for new contributors includes the [directory structure][doc-dirstruct]
 and [new feature tutorial][doc-newfeat]. You can also improve
 [Zulip.org][z-org].
 
-* **Mailing lists and bug tracker**. Zulip has a [development
-discussion mailing list](#community) and uses [GitHub issues
-][gh-issues].  There are also lists for the [Android][email-android]
-and [iOS][email-ios] apps.  Feel free to send any questions or
-suggestions of areas where you'd love to see more documentation to the
-relevant list! Check out our [bug report guidelines][bug-report]
-before submitting. Please report any security issues you discover to
-zulip-security@googlegroups.com.
+* **Report issues**. Zulip uses [GitHub issues ][gh-issues].  Check out our
+[bug report guidelines][bug-report] before submitting. Please report any
+security issues you discover to zulip-security@googlegroups.com.
 
 * **App codebases**. This repository is for the Zulip server and web
 app (including most integrations).  The
@@ -148,8 +125,6 @@ and posting on whether or not it worked is valuable.
 [android]: https://github.com/zulip/zulip-android
 [mobile]: https://github.com/zulip/zulip-mobile
 [mobile-strategy]: https://github.com/zulip/zulip-android/blob/master/android-strategy.md
-[email-android]: https://groups.google.com/forum/#!forum/zulip-android
-[email-ios]: https://groups.google.com/forum/#!forum/zulip-ios
 [hubot-adapter]: https://github.com/zulip/hubot-zulip
 [jenkins]: https://github.com/zulip/zulip-jenkins-plugin
 [node]: https://github.com/zulip/zulip-node
@@ -264,8 +239,7 @@ and [coding style guidelines](http://zulip.readthedocs.io/en/latest/code-style.h
 on ReadTheDocs.
 
 Feedback on how to make this development process more efficient, fun,
-and friendly to new contributors is very welcome!  Just send an email
-to the [zulip-devel](#community) list with your thoughts.
+and friendly to new contributors is very welcome!
 
 When you feel like you have completed your work on an issue, post your
 PR to the
