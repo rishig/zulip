@@ -3174,6 +3174,7 @@ def do_update_user_presence(user_profile: UserProfile,
                             client: Client,
                             log_time: datetime.datetime,
                             status: int) -> None:
+    status = UserPresence.ACTIVE
     client = consolidate_client(client)
     (presence, created) = UserPresence.objects.get_or_create(
         user_profile = user_profile,

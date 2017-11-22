@@ -1,14 +1,22 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Text
 
+from argparse import ArgumentParser
+from django.db.models import F
 from django.core.management.base import BaseCommand
 
-from zerver.lib.actions import bulk_add_subscriptions, \
-    create_stream_if_needed, do_add_reaction_legacy, do_change_avatar_fields, \
-    do_create_user, do_send_messages, internal_prep_stream_message
+from zerver.lib.actions import bulk_add_subscriptions, bulk_remove_subscriptions, \
+    create_stream_if_needed, create_streams_if_needed, do_add_reaction_legacy, \
+    do_change_avatar_fields, do_create_realm, do_create_user, do_send_messages, \
+    internal_prep_stream_message
 from zerver.lib.upload import upload_avatar_image
-from zerver.models import Message, UserProfile, get_realm
+from zerver.models import Message, UserProfile, get_realm, Stream, Realm, Client, \
+    UserPresence, UserMessage
+
+from .lorem_data import lorem_words
+from datetime import timedelta
+import random
 
 class Command(BaseCommand):
     help = """Add a mock conversation to the development environment.
@@ -29,6 +37,12 @@ From browser (ideally on high resolution screen):
 From image editing program:
 * Remove mute (and edit) icons from recipient bar
 """
+
+    def add_arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument('--keep_users', action="store_true", default=False,
+                            help="Don't recreate users.")
+        parser.add_argument('--keep_streams', action="store_true", default=False,
+                            help="Don't recreate streams.")
 
     def set_avatar(self, user: UserProfile, filename: str) -> None:
         upload_avatar_image(open(filename, 'rb'), user, user)
@@ -104,5 +118,101 @@ From image editing program:
         # thumbs_up shows up second
         do_add_reaction_legacy(starr, preview_message, 'thumbs_up')
 
+    def get_or_create_user(self, email: Text, realm: Realm, name: Text,
+                           is_realm_admin: bool=False,
+                           avatar_url: Optional[str]=None):
+        try:
+            return UserProfile.objects.filter(email=email, realm=realm).get()
+        except UserProfile.DoesNotExist:
+            user = do_create_user(email, 'password', realm, name, '', is_realm_admin=is_realm_admin)
+            if avatar_url is not None:
+                self.set_avatar(user, 'static/images/features/starr.png')
+            return user
+
+    def add_topics_and_threading_conversation(self, options: Dict[str, Any]) -> None:
+        realm = Realm.objects.filter(string_id='topics').first()
+        if realm is None:
+            realm = do_create_realm('topics', 'topics')
+
+        if not options['keep_users']:
+            UserProfile.objects.filter(email__contains='stage').delete()
+        starr = self.get_or_create_user('1@stage.example.com', realm, 'Ada Starr',
+                                        is_realm_admin=True,
+                                        avatar_url='static/images/features/starr.png')
+        fisher = self.get_or_create_user('2@stage.example.com', realm, 'Bel Fisher',
+                                    avatar_url='static/images/features/fisher.png')
+        coral = self.get_or_create_user('3@stage.example.com', realm, 'Crazy Coral')
+        dolphin = self.get_or_create_user('4@stage.example.com', realm, 'Dewey Dolphin')
+        eel = self.get_or_create_user('5@stage.example.com', realm, 'Enigmatic Eel')
+
+        # turn off hotspots
+        starr.tutorial_status = UserProfile.TUTORIAL_FINISHED
+        starr.save(update_fields=['tutorial_status'])
+
+        bulk_remove_subscriptions([starr], Stream.objects.filter(realm=realm))
+
+        stream_names = ['design', 'engineering', 'general', 'marketing', 'sf office']
+
+        for stream_name in stream_names:
+            create_stream_if_needed(realm, stream_name)
+        bulk_add_subscriptions(Stream.objects.filter(realm=realm, name__in=stream_names),
+                               [starr])
+
+        random.seed(42)
+        changes = [2]*4 + [1]*5 + [0]*10
+        random.shuffle(changes)
+
+        topics = ['/team page', 'logo border', 'narrow icon', 'linkify on paste', 'link shortcut key']
+        topic_indices = [3]*2 + [2]*10 + [1]*3 + [0]*5
+
+        # for i in range(len(changes)):
+        #     if changes[i] < 2:
+        #         topic_indices.append(topic_indices[-1])
+        #     else:
+        #         topic_indices.append(random.randint(0, len(topics)-1))
+
+        users = [starr, fisher, coral, dolphin, eel]
+        user_indices = [0]
+        for i in range(len(changes)):
+            if changes[i] < 1:
+                user_indices.append(user_indices[-1])
+            else:
+                user_indices.append(random.randint(0, len(users)-1))
+
+        messages = [internal_prep_stream_message(
+            realm, users[0], stream.name, 'keep alive', random.choice(lorem_words)
+        ) for stream in Stream.objects.filter(invite_only=False)]
+        do_send_messages(messages)
+
+        messages = [internal_prep_stream_message(
+            realm, users[0], 'design', topics[-1], random.choice(lorem_words))]
+        do_send_messages(messages)
+
+        UserMessage.objects.all().update(flags=F('flags').bitor(UserMessage.flags.read))
+
+        messages = [internal_prep_stream_message(
+            realm, users[user_indices[i]], 'design', topics[topic_indices[i]], random.choice(lorem_words)
+        ) for i in range(len(changes)+1)]
+        do_send_messages(messages)
+
+        messages = [internal_prep_stream_message(
+            realm, users[-1], 'general', 'bump unread count', 'message text') for i in range(3)]
+        do_send_messages(messages)
+
+        messages = [internal_prep_stream_message(
+            realm, users[-1], 'marketing', 'bump unread count', 'message text') for i in range(1)]
+        do_send_messages(messages)
+
+        client = Client.objects.first()
+        for user in users:
+            UserPresence.objects.get_or_create(
+                user_profile=user, client=client, defaults={
+                    'status': UserPresence.ACTIVE,
+                    'timestamp': user.date_joined + timedelta(days=1000)})
+
+        # UserProfile.objects.all().update(pointer=0)
+
+
     def handle(self, *args: Any, **options: str) -> None:
-        self.add_message_formatting_conversation()
+        # self.add_topics_and_threading_conversation()
+        self.add_topics_and_threading_conversation(options)

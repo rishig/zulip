@@ -6,7 +6,7 @@ var exports = {};
 */
 
 /* Broadcast "idle" to server after 5 minutes of local inactivity */
-var DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+var DEFAULT_IDLE_TIMEOUT_MS = 5000 * 60 * 1000;
 /* Time between keep-alive pings */
 var ACTIVE_PING_INTERVAL_MS = 50 * 1000;
 
