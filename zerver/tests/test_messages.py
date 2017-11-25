@@ -1261,7 +1261,7 @@ class MessagePOSTTest(ZulipTestCase):
         user.is_api_super_user = True
         user.save()
         user = get_user(email, get_realm('zulip'))
-        self.subscribe(user, "#IRCland")
+        self.subscribe(user, "IRCland")
         result = self.client_post("/api/v1/messages",
                                   {"type": "stream",
                                    "forged": "true",
@@ -1270,16 +1270,6 @@ class MessagePOSTTest(ZulipTestCase):
                                    "client": "irc_mirror",
                                    "subject": "from irc",
                                    "to": "IRCLand"},
-                                  **self.api_auth(email))
-        self.assert_json_error(result, "IRC stream names must start with #")
-        result = self.client_post("/api/v1/messages",
-                                  {"type": "stream",
-                                   "forged": "true",
-                                   "sender": "irc-user@irc.zulip.com",
-                                   "content": "Test message",
-                                   "client": "irc_mirror",
-                                   "subject": "from irc",
-                                   "to": "#IRCLand"},
                                   **self.api_auth(email))
         self.assert_json_success(result)
 
