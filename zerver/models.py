@@ -555,7 +555,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     MAX_NAME_LENGTH = 100
     MIN_NAME_LENGTH = 3
     API_KEY_LENGTH = 32
-    NAME_INVALID_CHARS = ['*', '`', '>', '"', '@']
+    NAME_INVALID_CHARS = ['*', '`', '>', '"', '@', '#']
 
     # Our custom site-specific fields
     full_name = models.CharField(max_length=MAX_NAME_LENGTH)  # type: Text
@@ -885,6 +885,8 @@ def generate_email_token_for_stream():
 
 class Stream(models.Model):
     MAX_NAME_LENGTH = 60
+    # Keep in sync with stream_create.js
+    NAME_INVALID_CHARS = ['*', '@', '`', '#']
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)  # type: Text
     realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)  # type: Realm
     invite_only = models.NullBooleanField(default=False)  # type: Optional[bool]
