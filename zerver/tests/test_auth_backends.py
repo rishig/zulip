@@ -565,7 +565,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             self.assert_in_response('action="/accounts/register/"', result)
             data = {"from_confirmation": "1",
                     "full_name": name,
-                    "key": confirmation_key}
+                    "prereg_user_id": confirmation.object_id}
             result = self.client_post('/accounts/register/', data)
             self.assert_in_response("You're almost there", result)
             # Verify that the user is asked for name but not password
@@ -575,7 +575,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             result = self.client_post(
                 '/accounts/register/',
                 {'full_name': name,
-                 'key': confirmation_key,
+                 "prereg_user_id": confirmation.object_id,
                  'terms': True})
 
         self.assertEqual(result.status_code, 302)
