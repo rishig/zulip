@@ -1,71 +1,76 @@
-This webhook integration for Trello is the recommended way to
-integrate with Trello, and should support all the features of
-the [legacy Trello cron-based integration](./trello-plugin).
+Get Zulip notifications from your Trello boards!
 
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-{!create-bot-construct-url.md!}
+1. {!create-bot-construct-url-indented.md!}
 
-Trello doesn't support creating webhooks on their website; you
-have to do it using their API.  So before you create a webhook,
-you'll need to follow the steps below to get from Trello
-an **APPLICATION_KEY**, and a **UserToken**, and to fetch
-the board's **idModel**.
+* We will first collect four items: a **Board ID**, an **API Key**, a
+  **User Token**, and an **ID Model**.
 
-To generate the **APPLICATION_KEY**, open this URL in your web browser:
-`https://trello.com/1/appkey/generate`.
+    * **Board ID**: Go to your Trello board. The URL should look like
+      `https://trello.com/b/<BOARD_ID>/<BOARD_NAME>`. Note down the
+      `<BOARD_ID>`.
 
-To generate a read access token, fill in and open this URL in the browser while logged into your Trello account:
-`https://trello.com/1/authorize?key=<APPLICATION_KEY>&name=Issue+Manager&expiration=never&response_type=token&scope=read`
-You will receive your **UserToken**. Note it.
+    * **API Key**: Go to <https://trello.com/1/appkey/generate>. Note down the
+      key listed under **Developer API Keys**.
 
-Within the the board URL, you can find the **TRELLO_BOARD_SHORT_ID**.
-The Trello URL format is:
-`https://trello.com/b/TRELLO_BOARD_SHORT_ID/boardName`.
+    * **User Token**: Go to the URL below, after replacing `<API_KEY>` with the
+      API Key you just wrote down.
 
-Now you have the **APPLICATION_KEY**, **UserToken** and **TRELLO_BOARD_SHORT_ID**.
-Construct this URL and open it in your web browser:
-`https://api.trello.com/1/board/<TRELLO_BOARD_SHORT_ID>?key=<APPLICATION_KEY>&token=<UserToken>`
-You'll receive some JSON. Within that, find the **id** value. That's your **idModel**; note it.
+       `https://trello.com/1/authorize?key=<API_KEY>&name=Issue+Manager&expiration=never&response_type=token&scope=read`
 
-Now you have all the ingredients you need.  To actually create the
-Trello webhook, you will need to send an `HTTP POST`
-request to the trello API webhook endpoint
-(`https://api.trello.com/1/tokens/<UserToken>/webhooks/?key=<APPLICATION_KEY>`)
-with the following data:
+      Click on **Allow**. Note down the token generated.
+
+    * **ID Model**: Go to the following URL, after replacing `<BOARD_ID>`,
+      `<API_KEY>`, and `<USER_TOKEN>` appropriately:
+
+       `https://api.trello.com/1/board/<BOARD_ID>?key=<API_KEY>&token=<USER_TOKEN>`
+
+      You should see a bunch of structured text. Find the row that looks like
+      `id: <some number>`. Note down that number.
+
+1. To create the webhook, send a **POST** request to
+
+    `https://api.trello.com/1/tokens/<USER_TOKEN>/webhooks/?key=<API_KEY>`
+
+    with the following data:
 
 ```
 {
-"description": "Webhook for Zulip integration",
-"callbackURL": "<URL_TO_ZULIP_WEBHOOK_FROM_SECOND_STEP>",
-"idModel": "<ID_MODEL>",
+    "description": "Webhook for Zulip integration",
+    "callbackURL": "<URL_FROM_STEP_2>",
+    "idModel": "<ID_MODEL>",
 }
 ```
 
-You can do this using the `curl` program as follows:
+For example, you can do this using the `curl` program as follows:
+
 ```
-curl 'https://api.trello.com/1/tokens/<UserToken>/webhooks/?key=<APPLICATION_KEY>'
+curl 'https://api.trello.com/1/tokens/<USER_TOKEN>/webhooks/?key=<API_KEY>'
 -H 'Content-Type: application/json' -H 'Accept: application/json'
---data-binary $'{\n  "description": "Webhook for Zulip integration",\n  "callbackURL": "<URL_TO_ZULIP_WEBHOOK_FROM_SECOND_STEP>",\n  "idModel": "<ID_MODEL>"\n}'
+--data-binary $'{\n  "description": "Webhook for Zulip integration",\n  "callbackURL": "<URL_FROM_STEP_2>",\n  "idModel": "<ID_MODEL>"\n}'
 --compressed
 ```
+
+Remember to replace `<USER_TOKEN>`, `<API_KEY>`, `<URL_FROM_STEP_2>`, and `<ID_MODEL>`, keeping the quotes (`"`) in place.
 
 The response from Trello should look like:
 
 ```
 {
-"id": "<WEBHOOK_ID>",
-"description": "Webhook for Zulip integration",
-"idModel": "<ID_MODEL>",
-"callbackURL": "<URL_TO_ZULIP_WEBHOOK_FROM_SECOND_STEP>",
-"active": true
+    "id": "<WEBHOOK_ID>",
+    "description": "Webhook for Zulip integration",
+    "idModel": "<ID_MODEL>",
+    "callbackURL": "<URL_FROM_STEP_2>",
+    "active": true
 }
 ```
 
-Congratulations! You've created a webhook and your integration is live.
+!!! tip ""
+    To learn more, see [Trello's webhooks documentation][1].
 
+[1]: https://developers.trello.com/page/webhooks
 
-When you make changes in on this board in Trello, you will
-receive Zulip notifications like this:
+{!congrats.md!}
 
 ![](/static/images/integrations/trello/001.png)
