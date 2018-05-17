@@ -45,4 +45,30 @@
 
     </div>
 
+    <div class="page-content">
+        <div id="id_stats_errors" class="alert alert-error"></div>
+        <div class="center-charts">
+            <div class="left">
+                <div class="chart-container">
+                    <h1>{{ _("Installations over time") }}</h1>
+                    <div class="button-container">
+                        <label>{{ _("Aggregation") }}</label>
+                        <div class="buttons">
+                            <button class="button" type="button" id='daily_button'>{{ _("Daily") }} </button>
+                            <button class="button" type="button" id='weekly_button'>{{ _("Weekly") }} </button>
+                            <button class="button" type="button" id='cumulative_button'>{{ _("Cumulative") }} </button>
+                        </div>
+                    </div>
+                    <div id="id_new_realms_over_time">
+                        <div class="spinner"></div>
+                    </div>
+                    <div id="hoverinfo">
+                        <span id="hover_date"></span>
+                        <span id="hover_value"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}

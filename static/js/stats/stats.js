@@ -83,17 +83,9 @@ $(function () {
     });
 });
 
-
 function get_chart_data(data, callback) {
-    var url;
-    if (page_params.is_staff) {
-        url = '/json/analytics/chart_data/realm/' + page_params.stats_realm;
-    } else {
-        url = '/json/analytics/chart_data';
-    }
-
     $.get({
-        url: url,
+        url: '/json/analytics/chart_data' + page_params.data_url_suffix,
         data: data,
         idempotent: true,
         success: function (data) {
@@ -327,10 +319,12 @@ function populate_messages_sent_over_time(data) {
     }
 }
 
-get_chart_data(
-    {chart_name: 'messages_sent_over_time', min_length: '10'},
-    populate_messages_sent_over_time
-);
+if (!page_params.for_installation) {
+    get_chart_data(
+        {chart_name: 'messages_sent_over_time', min_length: '10'},
+        populate_messages_sent_over_time
+    );
+}
 
 function round_to_percentages(values, total) {
     return values.map(function (x) {
@@ -545,10 +539,12 @@ function populate_messages_sent_by_client(data) {
     });
 }
 
-get_chart_data(
-    {chart_name: 'messages_sent_by_client', min_length: '10'},
-    populate_messages_sent_by_client
-);
+if (!page_params.for_installation) {
+    get_chart_data(
+        {chart_name: 'messages_sent_by_client', min_length: '10'},
+        populate_messages_sent_by_client
+    );
+}
 
 function populate_messages_sent_by_message_type(data) {
     var layout = {
@@ -656,10 +652,12 @@ function populate_messages_sent_by_message_type(data) {
     });
 }
 
-get_chart_data(
-    {chart_name: 'messages_sent_by_message_type', min_length: '10'},
-    populate_messages_sent_by_message_type
-);
+if (!page_params.for_installation) {
+    get_chart_data(
+        {chart_name: 'messages_sent_by_message_type', min_length: '10'},
+        populate_messages_sent_by_message_type
+    );
+}
 
 function populate_number_of_users(data) {
     var layout = {
@@ -726,3 +724,8 @@ get_chart_data(
     {chart_name: 'number_of_humans', min_length: '10'},
     populate_number_of_users
 );
+
+if (page_params.for_installation) {
+    $('.left').hide();
+    $('#pie_messages_sent_by_type').hide();
+}

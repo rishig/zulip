@@ -9,7 +9,8 @@ from analytics.lib.counts import COUNT_STATS, \
     CountStat, do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data
 from analytics.lib.time_utils import time_range
-from analytics.models import BaseCount, FillState, RealmCount, UserCount, StreamCount
+from analytics.models import BaseCount, FillState, RealmCount, UserCount, \
+    StreamCount, InstallationCount
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, UserProfile, Stream, Message, Client, \
     RealmAuditLog, Recipient
@@ -64,6 +65,8 @@ class Command(BaseCommand):
                                 table: Type[BaseCount]) -> None:
             end_times = time_range(last_end_time, last_end_time, stat.frequency,
                                    len(list(fixture_data.values())[0]))
+            if table == InstallationCount:
+                id_args = {}
             if table == RealmCount:
                 id_args = {'realm': realm}
             if table == UserCount:
@@ -82,6 +85,10 @@ class Command(BaseCommand):
             None: self.generate_fixture_data(stat, .1, .03, 3, .5, 3, partial_sum=True),
         }  # type: Mapping[Optional[str], List[int]]
         insert_fixture_data(stat, realm_data, RealmCount)
+        installation_data = {
+            None: self.generate_fixture_data(stat, 1, .3, 4, .5, 3, partial_sum=True),
+        }  # type: Mapping[Optional[str], List[int]]
+        insert_fixture_data(stat, installation_data, InstallationCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
 

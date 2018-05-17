@@ -1,7 +1,10 @@
 {
     "activity": [
+        "./node_modules/plotly.js/dist/plotly-basic.min.js",
         "./node_modules/sorttable/sorttable.js",
-        "./static/styles/activity.scss"
+        "./static/js/stats/activity.js",
+        "./static/styles/activity.scss",
+        "./static/styles/stats.scss"
     ],
     "portico": [
         "./static/js/portico/header.js",

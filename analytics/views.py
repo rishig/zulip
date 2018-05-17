@@ -25,7 +25,7 @@ from jinja2 import Markup as mark_safe
 from analytics.lib.counts import COUNT_STATS, CountStat, process_count_stat
 from analytics.lib.time_utils import time_range
 from analytics.models import BaseCount, InstallationCount, \
-    RealmCount, StreamCount, UserCount, last_successful_fill
+    RealmCount, StreamCount, UserCount, last_successful_fill, installation_epoch
 from zerver.decorator import require_server_admin, require_server_admin_api, \
     to_non_negative_int, to_utc_datetime, zulip_login_required
 from zerver.lib.exceptions import JsonableError
@@ -37,22 +37,21 @@ from zerver.lib.timestamp import ceiling_to_day, \
 from zerver.models import Client, get_realm, Realm, \
     UserActivity, UserActivityInterval, UserProfile
 
-def render_stats(request: HttpRequest, realm: Realm) -> HttpRequest:
+def render_stats(request: HttpRequest, data_url_suffix: str, for_installation: bool, name: str) -> HttpRequest:
     page_params = dict(
-        is_staff        = request.user.is_staff,
-        stats_realm     = realm.string_id,
-        debug_mode      = False,
+        data_url_suffix=data_url_suffix,
+        for_installation=for_installation,
+        debug_mode=False,
     )
-
     return render(request,
                   'analytics/stats.html',
-                  context=dict(target_realm_name=realm.name,
+                  context=dict(name=name,
                                page_params=JSONEncoderForHTML().encode(page_params)))
 
 @zulip_login_required
 def stats(request: HttpRequest) -> HttpResponse:
     realm = request.user.realm
-    return render_stats(request, realm)
+    return render_stats(request, '', False, realm.name)
 
 @require_server_admin
 @has_request_variables
@@ -61,7 +60,7 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
     if realm is None:
         return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
 
-    return render_stats(request, realm)
+    return render_stats(request, '/realm/%s' % (realm_str,), False, realm.name)
 
 @require_server_admin_api
 @has_request_variables
@@ -72,6 +71,31 @@ def get_chart_data_for_realm(request: HttpRequest, user_profile: UserProfile,
         raise JsonableError(_("Invalid organization"))
 
     return get_chart_data(request=request, user_profile=user_profile, realm=realm, **kwargs)
+
+@require_server_admin
+def stats_for_installation(request: HttpRequest) -> HttpResponse:
+    return render_stats(request, '/installation', True, 'the Installation')
+
+@require_server_admin_api
+def get_chart_data_for_installation(request: HttpRequest, user_profile: UserProfile,
+                                    **kwargs: Any) -> HttpResponse:
+    stat = COUNT_STATS['realm_active_humans::day']
+    subgroup_to_label = {None: 'human'}  # type: Dict[Optional[str], str]
+    labels_sort_function = None
+    include_empty_subgroups = True
+
+    start = installation_epoch()
+    end = last_successful_fill(stat.property)
+    end_times = time_range(start, end, stat.frequency, 10)
+
+    data = {'end_times': end_times, 'frequency': stat.frequency}
+    data['realm'] = get_time_series_by_subgroup(
+        stat, InstallationCount, -1, end_times, subgroup_to_label, include_empty_subgroups)
+    if labels_sort_function is not None:
+        data['display_order'] = labels_sort_function(data)
+    else:
+        data['display_order'] = None
+    return json_success(data=data)
 
 @has_request_variables
 def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: str=REQ(),
@@ -227,7 +251,6 @@ def get_time_series_by_subgroup(stat: CountStat,
     for subgroup, label in subgroup_to_label.items():
         if (subgroup in value_dicts) or include_empty_subgroups:
             value_arrays[label] = [value_dicts[subgroup][end_time] for end_time in end_times]
-
     if stat == COUNT_STATS['messages_sent:client:day']:
         # HACK: We rewrite these arrays to collapse the Client objects
         # with similar names into a single sum, and generally give
