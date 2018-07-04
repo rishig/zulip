@@ -199,10 +199,12 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     if customer is None:
         return HttpResponseRedirect(reverse('zilencer.views.initial_upgrade'))
 
-    # TODO
-    # if not user.is_realm_admin and not user == customer.billing_user:
-        # context['error_message'] = _("You must be an administrator to view this page.")
-        # return render(request, 'zilencer/billing.html', context=context)
+    if not user.is_realm_admin and not user == customer.billing_user:
+        context = {
+            'error_message': _("You must be an organization administrator or a "
+                               "billing administrator to view this page.")
+        }  # type: Dict[str, Any]
+        return render(request, 'zilencer/billing.html', context=context)
 
     stripe_customer = get_stripe_customer(customer.stripe_customer_id)
 
@@ -238,6 +240,6 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         'payment_method': payment_method,
         'prorated_charges': '{:,.2f}'.format(prorated_charges),
         'prorated_credits': '{:,.2f}'.format(prorated_credits),
-    }  # type: Dict[str, Any]
+    }
 
     return render(request, 'zilencer/billing.html', context=context)
