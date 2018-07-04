@@ -92,6 +92,14 @@ def get_upcoming_invoice(stripe_customer_id: int) -> stripe.Invoice:
     return stripe_invoice
 
 @catch_stripe_errors
+def get_live_subscription(customer: Customer) -> Optional[stripe.Subscription]:
+    stripe_customer = stripe.Customer.retrieve(customer.stripe_customer_id)
+    for subscription in stripe_customer.subscriptions.data:
+        if subscription.status != "canceled":
+            return subscription
+    return None
+
+@catch_stripe_errors
 def payment_source(stripe_customer: stripe.Customer) -> Optional[stripe.Card]:
     if stripe_customer.default_source is None:
         return None  # nocoverage -- no way to get here yet
@@ -122,8 +130,8 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
 @catch_stripe_errors
 def do_subscribe_customer_to_plan(customer: Customer, stripe_plan_id: int,
                                   seat_count: int, tax_percent: float) -> None:
-    # TODO: check that there are no existing live Stripe subscriptions
-    # (canceled subscriptions are ok)
+    if get_live_subscription(customer) is not None:
+        AssertionError("Customer has a live subscription.")
     stripe_subscription = stripe.Subscription.create(
         customer=customer.stripe_customer_id,
         billing='charge_automatically',
