@@ -210,17 +210,20 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         # Need user's timezone to do this properly
         renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(
             dt=timestamp_to_datetime(subscription.current_period_end))
+        upcoming_invoice = get_upcoming_invoice(customer.stripe_customer_id)
         renewal_amount = subscription.plan.amount * subscription.quantity / 100.
+        prorated_credits = 0
+        prorated_charges = upcoming_invoice.amount_due / 100. - renewal_amount
+        if prorated_charges < 0:
+            prorated_credits = -prorated_charges  # nocoverage -- no way to get here yet
+            prorated_charges = 0  # nocoverage
     else:
         plan_name = "Zulip Free"  # nocoverage -- no way to get here yet
-        renewal_date = ''  # nocoverage -- no way to get here yet
-        renewal_amount = 0  # nocoverage -- no way to get here yet
-
-    prorated_credits = 0
-    prorated_charges = get_upcoming_invoice(customer.stripe_customer_id).amount_due / 100. - renewal_amount
-    if prorated_charges < 0:
-        prorated_credits = -prorated_charges  # nocoverage -- no way to get here yet
-        prorated_charges = 0  # nocoverage -- no way to get here yet
+        renewal_date = ''  # nocoverage
+        renewal_amount = 0  # nocoverage
+        prorated_credits = 0  # nocoverage
+        prorated_charges = 0  # nocoverage
+        seat_count = 0
 
     payment_method = None
     source = payment_source(stripe_customer)
