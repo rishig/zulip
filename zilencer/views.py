@@ -26,7 +26,7 @@ from zerver.views.push_notifications import validate_token
 from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, StripeError, \
     do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
     get_stripe_customer, get_upcoming_invoice, payment_source, \
-    get_seat_count
+    get_seat_count, get_live_subscription
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
     Customer, Plan
 
@@ -206,10 +206,10 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         }  # type: Dict[str, Any]
         return render(request, 'zilencer/billing.html', context=context)
 
+    subscription = get_live_subscription(customer)
     stripe_customer = get_stripe_customer(customer.stripe_customer_id)
 
-    if stripe_customer.subscriptions:
-        subscription = stripe_customer.subscriptions.data[0]
+    if subscription:
         plan_name = PLAN_NAMES[Plan.objects.get(stripe_plan_id=subscription.plan.id).nickname]
         seat_count = subscription.quantity
         # Need user's timezone to do this properly
