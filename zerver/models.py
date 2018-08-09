@@ -138,6 +138,11 @@ def get_realm_emoji_cache_key(realm: 'Realm') -> str:
 def get_active_realm_emoji_cache_key(realm: 'Realm') -> str:
     return u'active_realm_emoji:%s' % (realm.id,)
 
+def default_plan_type() -> int:
+    if settings.BILLING_ENABLED:
+        return Realm.LIMITED
+    return Realm.SELF_HOSTED
+
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_SUBDOMAIN_LENGTH = 40
@@ -222,6 +227,12 @@ class Realm(models.Model):
     CORPORATE = 1
     COMMUNITY = 2
     org_type = models.PositiveSmallIntegerField(default=CORPORATE)  # type: int
+
+    SELF_HOSTED = 1
+    LIMITED = 2
+    PREMIUM = 3
+    PREMIUM_FREE = 4
+    plan_type = models.PositiveSmallIntegerField(default=default_plan_type)  # type: int
 
     # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
     # On updating it here, update it there as well.
@@ -2189,6 +2200,7 @@ class RealmAuditLog(models.Model):
 
     REALM_DEACTIVATED = 'realm_deactivated'
     REALM_REACTIVATED = 'realm_reactivated'
+    REALM_PLAN_TYPE_CHANGED = 'realm_plan_type_changed'
 
     SUBSCRIPTION_CREATED = 'subscription_created'
     SUBSCRIPTION_ACTIVATED = 'subscription_activated'

@@ -99,6 +99,7 @@ class StripeTest(ZulipTestCase):
         response = self.client_get("/upgrade/")
         self.assert_in_success_response(['We can also bill by invoice'], response)
         self.assertFalse(user.realm.has_seat_based_plan)
+        self.assertNotEqual(user.realm.plan_type, Realm.PREMIUM)
 
         # Click "Make payment" in Stripe Checkout
         self.client_post("/upgrade/", {
@@ -135,6 +136,7 @@ class StripeTest(ZulipTestCase):
         # Check that we correctly updated Realm
         realm = get_realm("zulip")
         self.assertTrue(realm.has_seat_based_plan)
+        self.assertEqual(realm.plan_type, Realm.PREMIUM)
         # Check that we can no longer access /upgrade
         response = self.client_get("/upgrade/")
         self.assertEqual(response.status_code, 302)

@@ -436,6 +436,10 @@ DEFAULT_SETTINGS.update({
     # value in static/js/presence.js.  Also, probably move it out of
     # DEFAULT_SETTINGS, since it likely isn't usefully user-configurable.
     'OFFLINE_THRESHOLD_SECS': 5 * 60,
+
+    # Enables billing pages and plan-based feature gates. If False, all features
+    # are available to all realms.
+    'BILLING_ENABLED': False,
 })
 
 

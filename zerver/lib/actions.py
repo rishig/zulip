@@ -2996,6 +2996,14 @@ def do_change_icon_source(realm: Realm, icon_source: str, log: bool=True) -> Non
                               icon_url=realm_icon_url(realm))),
                active_user_ids(realm.id))
 
+def do_change_plan_type(realm: Realm, plan_type: int) -> None:
+    old_value = realm.plan_type
+    realm.plan_type = plan_type
+    realm.save(update_fields=['plan_type'])
+    RealmAuditLog.objects.create(realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
+                                 event_time=timezone_now(), extra_data={
+                                     'old_value': old_value, 'new_value': plan_type})
+
 def _default_stream_permision_check(user_profile: UserProfile, stream: Optional[Stream]) -> None:
     # Any user can have a None default stream
     if stream is not None:
