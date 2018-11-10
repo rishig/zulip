@@ -504,17 +504,20 @@ class StripeTest(ZulipTestCase):
         user = self.example_user('hamlet')
         # Before customer exists
         attach_discount_to_realm(user, 85)
-        mock_create_customer.assert_called_once_with(
-            description=Kandra(), email=self.example_email('hamlet'), metadata=Kandra(),
-            source=None, coupon=self.stripe_coupon_id)
-        mock_create_customer.reset_mock()
+        response = self.client_get("/upgrade/")
+        self.client_post("/upgrade/", {
+            'stripeToken': stripe_create_token().id,
+            'signed_seat_count': self.get_signed_seat_count_from_response(response),
+            'salt': self.get_salt_from_response(response),
+            'plan': Plan.CLOUD_ANNUAL})
+        stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
+        self.assertEqual(stripe_customer.discount, // TODO)
+        // check that the customer was charged 15% * get_seat_count * 80
+        // check that upcoming invoice is 15% * get_seat_count * 80
         # For existing customer
-        Coupon.objects.create(percent_off=42, stripe_coupon_id='42OFF')
-        with patch.object(
-                stripe.Customer, 'save', autospec=True,
-                side_effect=lambda stripe_customer: self.assertEqual(stripe_customer.coupon, '42OFF')):
-            attach_discount_to_realm(user, 42)
-        mock_create_customer.assert_not_called()
+        attach_discount_to_realm(user, 25)
+        // add a user, or do something else simple
+        // check that we are charging at 75% of the normal cost
 
     @patch("stripe.Subscription.delete")
     @patch("stripe.Customer.save")
@@ -522,63 +525,62 @@ class StripeTest(ZulipTestCase):
     @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
     def test_downgrade(self, mock_retrieve_customer: Mock, mock_upcoming_invoice: Mock,
                        mock_save_customer: Mock, mock_delete_subscription: Mock) -> None:
-        realm = get_realm('zulip')
-        realm.has_seat_based_plan = True
-        realm.plan_type = Realm.STANDARD
-        realm.save(update_fields=['has_seat_based_plan', 'plan_type'])
-        Customer.objects.create(
-            realm=realm, stripe_customer_id=self.stripe_customer_id, has_billing_relationship=True)
-        user = self.example_user('iago')
-        self.login(user.email)
+        // upgrade plan via /upgrade
+        self.assertEqual(realm.has_seat_based_plan, True)
+        self.assertEqual(realm.plan_type, Realm.STANDARD)
+
+        // increment_subscription_quantity
         response = self.client_post("/json/billing/downgrade", {})
         self.assert_json_success(response)
+        // customer = stripe_get_customer
+        // check that the subscription is gone
+        // check that negative balance is credited, i.e. that they have roughly the right
+              amount of money in customer.account_balance, which is the original quantity * 80
 
-        mock_delete_subscription.assert_called()
-        mock_save_customer.assert_called()
         realm = get_realm('zulip')
         self.assertFalse(realm.has_seat_based_plan)
+        self.assertEqual(realm.plan_type, Realm.LIMITED)
         audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
                                  .values_list('event_type', flat=True).order_by('id'))
-        # TODO: once we have proper mocks, test for event_time and extra_data in STRIPE_PLAN_CHANGED
+        // Also test for the correct event_time and extra_data in STRIPE_PLAN_CHANGED
         self.assertEqual(audit_log_entries, [RealmAuditLog.STRIPE_PLAN_CHANGED,
                                              RealmAuditLog.REALM_PLAN_TYPE_CHANGED])
-        self.assertEqual(realm.plan_type, Realm.LIMITED)
 
-    @patch("stripe.Customer.save")
+    // likely also have to add stripe.Customer.create
+    // possibly can get rid of stripe.Customer.retrieve?
     @patch("stripe.Customer.retrieve", side_effect=mock_create_customer)
     def test_downgrade_with_no_subscription(
             self, mock_retrieve_customer: Mock, mock_save_customer: Mock) -> None:
-        realm = get_realm('zulip')
-        Customer.objects.create(
-            realm=realm, stripe_customer_id=self.stripe_customer_id, has_billing_relationship=True)
+        // do_create_customer
         self.login(self.example_email('iago'))
-        response = self.client_post("/json/billing/downgrade", {})
+        with patch("stripe.Customer.save") as mock_save_customer:
+            response = self.client_post("/json/billing/downgrade", {})
+        mock_save_customer.assert_not_called()
         self.assert_json_error_contains(response, 'Please reload')
         self.assertEqual(ujson.loads(response.content)['error_description'], 'downgrade without subscription')
-        mock_save_customer.assert_not_called()
 
     @patch("stripe.Subscription.delete")
     @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_account_balance(1234))
-    def test_downgrade_credits(self, mock_retrieve_customer: Mock,
+    def test_downgrade_with_money_owed(self, mock_retrieve_customer: Mock,
                                mock_delete_subscription: Mock) -> None:
         user = self.example_user('iago')
         self.login(user.email)
         Customer.objects.create(
             realm=user.realm, stripe_customer_id=self.stripe_customer_id, has_billing_relationship=True)
-        # Check that positive balance is forgiven
-        with patch("stripe.Invoice.upcoming", side_effect=mock_invoice_preview_for_downgrade(1000)):
-            with patch.object(
-                    stripe.Customer, 'save', autospec=True,
-                    side_effect=lambda customer: self.assertEqual(customer.account_balance, 1234)):
-                response = self.client_post("/json/billing/downgrade", {})
+        // Do something like
+        // https://stripe.com/docs/billing/invoices/subscription#adding-upcoming-invoice-items
+        // to create a situation where they net-owe us money
+        response = self.client_post("/json/billing/downgrade", {})
         self.assert_json_success(response)
-        # Check that negative balance is credited
-        with patch("stripe.Invoice.upcoming", side_effect=mock_invoice_preview_for_downgrade(-1000)):
-            with patch.object(
-                    stripe.Customer, 'save', autospec=True,
-                    side_effect=lambda customer: self.assertEqual(customer.account_balance, 234)):
-                response = self.client_post("/json/billing/downgrade", {})
-        self.assert_json_success(response)
+        // customer = stripe_get_customer
+        // check that the subscription is gone
+        // check that positive balance is forgiven, i.e. that customer.account_balance is 0
+
+    // Note, our billing model has changed a bit, so actually medium term we want to remove the
+    // `if subscription_balance < 0:` from process_downgrade and just always transfer the
+    // subscription_balance to the account_balance
+    // We will still want this test, but the last line will be different, i.e. check that the
+    // positive balance was transferred correctly
 
     @patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
     def test_replace_payment_source(self, mock_retrieve_customer: Mock) -> None:
