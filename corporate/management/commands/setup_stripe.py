@@ -50,6 +50,12 @@ class Command(ZulipBaseCommand):
 
         coupon = stripe.Coupon.create(
             duration='forever',
+            name='70% discount',
+            percent_off=70)
+        Coupon.objects.create(percent_off=70, stripe_coupon_id=coupon.id)
+
+        coupon = stripe.Coupon.create(
+            duration='forever',
             name='85% discount',
             percent_off=85)
         Coupon.objects.create(percent_off=85, stripe_coupon_id=coupon.id)
