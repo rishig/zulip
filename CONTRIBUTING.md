@@ -305,7 +305,7 @@ documentation.
 **Upvoting Zulip**. Upvotes and reviews make a big difference in the public
 perception of projects like Zulip. We've collected a few sites below
 where we know Zulip has been discussed. Doing everything in the following
-list typically takes about 15 minutes.
+list typically takes about 20 minutes.
 * Star us on GitHub. There are four main repositories:
   [server/web](https://github.com/zulip/zulip),
   [mobile](https://github.com/zulip/zulip-mobile),
@@ -313,7 +313,7 @@ list typically takes about 15 minutes.
   [Python API](https://github.com/zulip/python-zulip-api).
 * [Follow us](https://twitter.com/zulip) on Twitter.
 
-For both of the following, you'll need to make an account on the site if you
+For the following, you'll need to make an account on the site if you
 don't already have one.
 
 * [Like Zulip](https://alternativeto.net/software/zulip-chat-server/) on
@@ -326,6 +326,8 @@ don't already have one.
   it, and upvote the reasons why people like Zulip that you find most
   compelling. Again, we recommend adding a few other products that you like
   as well.
+* [Write a review](https://www.g2crowd.com/products/zulip/reviews) on
+  G2 Crowd.
 
 We have a doc with more detailed instructions and a few other sites, if you
 have been using Zulip for a while and want to contribute more.
