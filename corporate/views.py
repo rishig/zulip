@@ -122,6 +122,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'cloud_monthly_price': 8,
         'cloud_annual_price': 80,
         'cloud_annual_price_per_month': 6.67,
+        'foo': 'FOO',
     }  # type: Dict[str, Any]
     response = render(request, 'corporate/upgrade.html', context=context)
     response['error_description'] = error_description

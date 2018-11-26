@@ -1,5 +1,9 @@
 {% extends "zerver/portico.html" %}
 
+<script>
+    var foo = "{{ foo }}";
+</script>
+
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 {{ render_bundle('landing-page') }}

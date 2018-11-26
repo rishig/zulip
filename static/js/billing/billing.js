@@ -1,4 +1,6 @@
 $(function () {
+    console.log(foo);
+
     var stripe_key = $("#payment-method").data("key");
     var handler = StripeCheckout.configure({ // eslint-disable-line no-undef
         key: stripe_key,
