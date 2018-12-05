@@ -144,7 +144,6 @@ def estimate_customer_arr(stripe_customer: stripe.Customer) -> int:  # nocoverag
     stripe_subscription = extract_current_subscription(stripe_customer)
     if stripe_subscription is None:
         return 0
-    # This is an overestimate for those paying by invoice
     estimated_arr = stripe_subscription.plan.amount * stripe_subscription.quantity / 100.
     if stripe_subscription.plan.interval == 'month':
         estimated_arr *= 12
@@ -240,8 +239,11 @@ def do_subscribe_customer_to_plan(user: UserProfile, stripe_customer: stripe.Cus
     with transaction.atomic():
         customer.has_billing_relationship = True
         customer.save(update_fields=['has_billing_relationship'])
-        customer.realm.has_seat_based_plan = True
-        customer.realm.save(update_fields=['has_seat_based_plan'])
+        if charge_automatically:
+            customer.realm.has_seat_based_plan = True
+        else:
+            customer.realm.seat_limit = seat_count
+        customer.realm.save(update_fields=['has_seat_based_plan', 'seat_limit'])
         RealmAuditLog.objects.create(
             realm=customer.realm,
             acting_user=user,

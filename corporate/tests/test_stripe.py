@@ -551,7 +551,8 @@ class StripeTest(ZulipTestCase):
 
         # Check that we correctly updated Realm
         realm = get_realm("zulip")
-        self.assertTrue(realm.has_seat_based_plan)
+        self.assertFalse(realm.has_seat_based_plan)
+        self.assertEqual(realm.seat_limit, 123)
         self.assertEqual(realm.plan_type, Realm.STANDARD)
         # Check that we created a Customer in Zulip
         self.assertEqual(1, Customer.objects.filter(stripe_customer_id=stripe_customer.id,
