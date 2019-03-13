@@ -398,6 +398,7 @@ exports.initialize = function () {
         e.preventDefault();
         e.stopPropagation();
         popovers.hide_all();
+        $(".tooltip").remove();
     });
 
     $('#group-pms').expectOne().on('click', '.selectable_sidebar_block', function (e) {
@@ -407,6 +408,7 @@ exports.initialize = function () {
         e.preventDefault();
         e.stopPropagation();
         popovers.hide_all();
+        $(".tooltip").remove();
     });
 
     $("#subscriptions_table").on("click", ".exit, #subscription_overlay", function (e) {
@@ -453,12 +455,53 @@ exports.initialize = function () {
         $(this).tooltip('destroy');
     });
 
-    // DESTROY PERSISTING TOOLTIPS ON HOVER
+    // GROUP PM HOVERS
 
-    $("body").on('mouseenter', '.tooltip', function (e) {
+    $("body").on('mouseenter', '.show_group_pm', function (e) {
+        $(".tooltip").remove();
         e.stopPropagation();
-        $(this).remove();
-        $(".tooltip-arrow").remove();
+        var elem = $(this);
+        var user_ids_string = elem.attr('data-user-ids-string');
+        var content = people.get_recipients(user_ids_string);
+        elem.tooltip({
+            title: content,
+            trigger: 'hover',
+            placement: 'bottom',
+            animation: false,
+        });
+        elem.tooltip('show');
+    });
+
+    $("body").on('mouseleave', '.show_group_pm', function (e) {
+        e.stopPropagation();
+        $(this).tooltip('destroy');
+    });
+
+    // BUDDY LIST AND PM LIST HOVERS
+
+    $('#user_presences').on('mouseenter', '.user-presence-link', function (e) {
+        e.stopPropagation();
+        var elem = $(this);
+        var user_id = elem.attr('data-user-id');
+        buddy_data.show_buddy_list_title(elem, user_id);
+    });
+
+    $('#user_presences').on('mouseleave click', '.user-presence-link', function (e) {
+        e.stopPropagation();
+        $(this).tooltip('destroy');
+    });
+
+    $("body").on('mouseenter', '.show_individual_pm', function (e) {
+        $(".tooltip").remove();
+        e.stopPropagation();
+        var elem = $(this);
+        var user_id = elem.attr('data-user-id');
+        buddy_data.show_buddy_list_title(elem, user_id);
+    });
+
+    $("body").on('mouseleave', '.show_individual_pm', function (e) {
+        e.stopPropagation();
+        $(this).tooltip('destroy');
     });
 
     // HOME

@@ -478,6 +478,10 @@ strong {
     padding: 3px 5px;
 }
 
+.tooltip-inner .tooltip-content {
+    text-align: left;
+}
+
 #message_edit_tooltip {
     float: right;
     color: hsl(0, 0%, 0%);
@@ -3029,3 +3033,4 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .flatpickr-months .numInputWrapper span {
     display: none;
 }
+

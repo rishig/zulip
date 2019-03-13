@@ -2,10 +2,17 @@ const _page_params = {};
 
 set_global('page_params', _page_params);
 set_global('i18n', global.stub_i18n);
+set_global('$', global.make_zjquery());
 zrequire('people');
 zrequire('presence');
 zrequire('util');
 zrequire('user_status');
+zrequire('Handlebars', 'handlebars');
+zrequire('templates');
+
+var noop = function () {};
+$.fn.tooltip = noop;
+
 zrequire('buddy_data');
 set_global('timerender', {});
 
@@ -56,7 +63,6 @@ function make_people() {
     people.initialize_current_user(me.user_id);
 }
 
-
 function activate_people() {
     const server_time = 9999;
     const info = {
@@ -80,7 +86,6 @@ function activate_people() {
         presence.set_info_for_user(user_id, {}, server_time);
     });
 }
-
 
 make_people();
 activate_people();
@@ -113,13 +118,63 @@ run_test('buddy_status', () => {
     assert.equal(buddy_data.buddy_status(me.user_id), 'active');
 });
 
-run_test('user_title', () => {
-    assert.equal(buddy_data.user_title(me.user_id), 'Human Myself is active');
+run_test('title_data', () => {
     user_status.set_status_text({
         user_id: me.user_id,
         status_text: 'out to lunch',
     });
-    assert.equal(buddy_data.user_title(me.user_id), 'out to lunch');
+
+    var expected_data = {
+        status_text: 'out to lunch',
+        last_seen: 'translated: Active now',
+        is_away: false,
+        name: 'Human Myself',
+        online_now: true,
+    };
+    assert.deepEqual(buddy_data.get_title_data(me.user_id), expected_data);
+
+    expected_data = {
+        status_text: undefined,
+        last_seen: 'translated: More than 2 weeks ago',
+        is_away: false,
+        name: 'Old User',
+        online_now: false,
+    };
+    assert.deepEqual(buddy_data.get_title_data(old_user.user_id), expected_data);
+});
+
+run_test('buddy_list_title', () => {
+    var elem = $.create('target-element');
+    var templates_render_called;
+    var args = {
+        status_text: 'out to lunch',
+        last_seen: 'translated: Active now',
+        is_away: false,
+        name: 'Human Myself',
+        online_now: true,
+    };
+
+    templates.render = function (template, opts) {
+        templates_render_called = true;
+        assert.equal(template, 'buddy_list_hover');
+        assert.deepEqual(opts, args);
+        return 'template_html';
+    };
+
+    buddy_data.show_buddy_list_title(elem, me.user_id);
+    assert(templates_render_called);
+
+    args = {
+        status_text: undefined,
+        last_seen: 'translated: Active now',
+        is_away: false,
+        name: 'Human Selma',
+        online_now: true,
+    };
+
+    templates_render_called = false;
+    buddy_data.show_buddy_list_title(elem, selma.user_id);
+    assert(templates_render_called);
 });
 
 run_test('simple search', () => {

@@ -13,13 +13,6 @@ var exports = {};
 
 exports.max_size_before_shrinking = 600;
 
-var presence_descriptions = {
-    away_me: 'is unavailable',
-    away_them: 'is unavailable',
-    active: 'is active',
-    idle: 'is not active',
-};
-
 var fade_config = {
     get_user_id: function (item) {
         return item.user_id;
@@ -190,33 +183,28 @@ exports.user_last_seen_time_status = function (user_id) {
     return timerender.last_seen_status_from_date(last_active_date.clone());
 };
 
-exports.user_title = function (user_id) {
-    var buddy_status = exports.buddy_status(user_id);
-    var type_desc = presence_descriptions[buddy_status];
-    var status_text = user_status.get_status_text(user_id);
+exports.get_title_data = function (user_id) {
+    var last_seen = exports.user_last_seen_time_status(user_id);
     var person = people.get_person_from_user_id(user_id);
-    var title;
-
-    if (status_text) {
-        // The user-set status, like "out to lunch",
-        // is more important than actual presence.
-        title = status_text;
+    var online_now;
+    if (last_seen.indexOf("Active now") !== -1) {
+        online_now = true;
     } else {
-        title = person.full_name;
-        if (type_desc) {
-            // example: "Cordelia Lear is unavailable"
-            title += ' ' + type_desc;
-        }
+        online_now = false;
     }
-
-    return title;
+    return {
+        status_text: user_status.get_status_text(user_id),
+        last_seen: last_seen,
+        is_away: user_status.is_away(user_id),
+        name: person.full_name,
+        online_now: online_now,
+    };
 };
 
 exports.info_for = function (user_id) {
     var user_circle_class = exports.get_user_circle_class(user_id);
     var person = people.get_person_from_user_id(user_id);
     var my_user_status = exports.my_user_status(user_id);
-    var title = exports.user_title(user_id);
     var user_circle_status = exports.status_description(user_id);
 
     return {
@@ -227,9 +215,20 @@ exports.info_for = function (user_id) {
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class: user_circle_class,
-        title: title,
         user_circle_status: user_circle_status,
     };
+};
+
+exports.show_buddy_list_title = function (elem, user_id) {
+    var title_data = buddy_data.get_title_data(user_id);
+    var html = templates.render('buddy_list_hover', title_data);
+    elem.tooltip({
+        title: html,
+        trigger: 'hover',
+        placement: 'bottom',
+        animation: false,
+    });
+    elem.tooltip('show');
 };
 
 exports.get_item = function (user_id) {

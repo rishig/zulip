@@ -1592,6 +1592,20 @@ run_test('user_presence_rows', () => {
     assert.equal(a.text().trim(), 'King Lear');
 });
 
+run_test('buddy_list_hover', () => {
+    var args = {
+        status_text: 'out to lunch',
+        last_seen: 'Active now',
+        is_away: false,
+        name: 'Iago',
+        online_now: true,
+    };
+
+    var html = render('buddy_list_hover', args);
+    var tooltip_content = $(html).find(".tooltip_inner_content");
+    assert.equal(tooltip_content.text().trim(), 'Iagoout to lunchActive now');
+});
+
 run_test('user_profile_modal', () => {
     var args = {
         full_name: "Iago",
@@ -1705,3 +1719,4 @@ run_test('archive_message_group', () => {
     assert.equal(last_message_text, 'This is message two.');
 
 });
+
