@@ -48,6 +48,22 @@ exports.get_user_circle_class = function (user_id) {
     }
 };
 
+exports.status_description = function (user_id) {
+    var status = exports.buddy_status(user_id);
+
+    switch (status) {
+    case 'active':
+        return 'Active';
+    case 'idle':
+        return 'Idle';
+    case 'away_them':
+    case 'away_me':
+        return 'Unavailable';
+    default:
+        return 'Offline';
+    }
+};
+
 exports.level = function (user_id) {
     if (people.is_my_user_id(user_id)) {
         // Always put current user at the top.
@@ -201,6 +217,7 @@ exports.info_for = function (user_id) {
     var person = people.get_person_from_user_id(user_id);
     var my_user_status = exports.my_user_status(user_id);
     var title = exports.user_title(user_id);
+    var user_circle_status = exports.status_description(user_id);
 
     return {
         href: hash_util.pm_with_uri(person.email),
@@ -211,6 +228,7 @@ exports.info_for = function (user_id) {
         num_unread: get_num_unread(user_id),
         user_circle_class: user_circle_class,
         title: title,
+        user_circle_status: user_circle_status,
     };
 };
 

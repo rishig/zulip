@@ -415,6 +415,52 @@ exports.initialize = function () {
         }
     });
 
+    // USER CIRCLE HOVERS
+
+    $('#user_presences').on('mouseenter', '.user_circle', function (e) {
+        e.stopPropagation();
+        var elem = $(this);
+        var content = elem.attr('data-hover');
+        elem.tooltip({
+            title: content,
+            trigger: 'hover',
+            placement: 'bottom',
+            animation: false,
+        });
+        elem.tooltip('show');
+    });
+
+    $('#user_presences').on('mouseleave', '.user_circle', function (e) {
+        e.stopPropagation();
+        $(this).tooltip('destroy');
+    });
+
+    $("body").on('mouseenter', '.user_circle_individual_pm', function (e) {
+        e.stopPropagation();
+        var elem = $(this);
+        var content = elem.attr('data-hover');
+        elem.tooltip({
+            title: content,
+            trigger: 'hover',
+            placement: 'bottom',
+            animation: false,
+        });
+        elem.tooltip('show');
+    });
+
+    $("body").on('mouseleave', '.user_circle_individual_pm', function (e) {
+        e.stopPropagation();
+        $(this).tooltip('destroy');
+    });
+
+    // DESTROY PERSISTING TOOLTIPS ON HOVER
+
+    $("body").on('mouseenter', '.tooltip', function (e) {
+        e.stopPropagation();
+        $(this).remove();
+        $(".tooltip-arrow").remove();
+    });
+
     // HOME
 
     $(document).on('click', ".top_left_all_messages", function (e) {

@@ -86,11 +86,13 @@ exports._build_private_messages_list = function (active_conversation) {
         var is_group = user_ids_string.indexOf(',') >= 0;
 
         var user_circle_class = buddy_data.get_user_circle_class(user_ids_string);
+        var user_circle_status = buddy_data.status_description(user_ids_string);
 
         var fraction_present;
         if (is_group) {
             user_circle_class = 'user_circle_fraction';
             fraction_present = buddy_data.huddle_fraction_present(user_ids_string);
+            user_circle_status = '';
         }
 
         var display_message = {
@@ -102,6 +104,7 @@ exports._build_private_messages_list = function (active_conversation) {
             user_circle_class: user_circle_class,
             fraction_present: fraction_present,
             is_group: is_group,
+            user_circle_status: user_circle_status,
         };
         display_messages.push(display_message);
     });
