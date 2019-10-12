@@ -16,7 +16,8 @@ from django.utils.crypto import get_random_string
 import argparse
 import uuid
 import configparser
-from zerver.lib.utils import generate_random_token
+from zerver.lib.utils import generate_random_token, generate_api_key
+from zilencer.models import RemoteZulipServer
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -98,6 +99,10 @@ def generate_secrets(development=False):
         add_secret('zulip_org_key', get_random_string(64))
     if need_secret('zulip_org_id'):
         add_secret('zulip_org_id', str(uuid.uuid4()))
+
+    if need_secret('zulip_url_key'):
+        add_secret('zulip_url_key',
+                   generate_api_key()[:RemoteZulipServer.URL_KEY_LENGTH])
 
     if not development:
         # Write the Camo config file directly
