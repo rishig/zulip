@@ -235,13 +235,15 @@ class StripeTestCase(ZulipTestCase):
         self.next_month = datetime(2012, 2, 2, 3, 4, 5).replace(tzinfo=timezone_utc)
         self.next_year = datetime(2013, 1, 2, 3, 4, 5).replace(tzinfo=timezone_utc)
 
-    def get_signed_seat_count_from_response(self, response: HttpResponse) -> Optional[str]:
+    def get_signed_seat_count_from_response(self, response: HttpResponse) -> str:
         match = re.search(r'name=\"signed_seat_count\" value=\"(.+)\"', response.content.decode("utf-8"))
-        return match.group(1) if match else None
+        assert match is not None  # for mypy
+        return match.group(1)
 
-    def get_salt_from_response(self, response: HttpResponse) -> Optional[str]:
+    def get_salt_from_response(self, response: HttpResponse) -> str:
         match = re.search(r'name=\"salt\" value=\"(\w+)\"', response.content.decode("utf-8"))
-        return match.group(1) if match else None
+        assert match is not None  # for mypy
+        return match.group(1)
 
     def upgrade(self, invoice: bool=False, talk_to_stripe: bool=True,
                 realm: Optional[Realm]=None, del_args: List[str]=[],
